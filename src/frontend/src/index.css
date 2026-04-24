@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+    --background: 0.13 0.007 95;
+    --foreground: 0.92 0.018 82;
+    --card: 0.22 0.007 95;
+    --card-foreground: 0.92 0.018 82;
+    --popover: 0.22 0.007 95;
+    --popover-foreground: 0.92 0.018 82;
+    --primary: 0.82 0.15 85;
+    --primary-foreground: 0.13 0.007 95;
+    --secondary: 0.25 0.007 95;
+    --secondary-foreground: 0.92 0.018 82;
+    --muted: 0.2 0.007 95;
+    --muted-foreground: 0.74 0.015 80;
+    --accent: 0.25 0.007 95;
+    --accent-foreground: 0.92 0.018 82;
+    --destructive: 0.48 0.16 25;
+    --destructive-foreground: 0.92 0.018 82;
+    --border: 0.29 0.007 95;
+    --input: 0.29 0.007 95;
+    --ring: 0.82 0.15 85;
+    --chart-1: 0.82 0.15 85;
+    --chart-2: 0.48 0.16 25;
+    --chart-3: 0.65 0.18 145;
+    --chart-4: 0.74 0.015 80;
+    --chart-5: 0.55 0.12 220;
+    --sidebar: 0.22 0.007 95;
+    --sidebar-foreground: 0.92 0.018 82;
+    --sidebar-primary: 0.82 0.15 85;
+    --sidebar-primary-foreground: 0.13 0.007 95;
+    --sidebar-accent: 0.25 0.007 95;
+    --sidebar-accent-foreground: 0.92 0.018 82;
+    --sidebar-border: 0.29 0.007 95;
+    --sidebar-ring: 0.82 0.15 85;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "DM Sans", system-ui, sans-serif;
+  }
+}
+
+.topo-bg {
+  background-color: oklch(0.13 0.007 95);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3Cg fill='none' stroke='%231E1F1B' stroke-width='1.2'%3E%3Cellipse cx='400' cy='400' rx='380' ry='300'/%3E%3Cellipse cx='400' cy='400' rx='320' ry='240'/%3E%3Cellipse cx='400' cy='400' rx='260' ry='180'/%3E%3Cellipse cx='400' cy='400' rx='200' ry='120'/%3E%3Cellipse cx='400' cy='400' rx='140' ry='70'/%3E%3Cellipse cx='400' cy='400' rx='80' ry='40'/%3E%3Cellipse cx='150' cy='200' rx='200' ry='150'/%3E%3Cellipse cx='150' cy='200' rx='150' ry='100'/%3E%3Cellipse cx='150' cy='200' rx='100' ry='55'/%3E%3Cellipse cx='650' cy='600' rx='220' ry='160'/%3E%3Cellipse cx='650' cy='600' rx='160' ry='110'/%3E%3Cellipse cx='650' cy='600' rx='100' ry='60'/%3E%3Cellipse cx='700' cy='150' rx='180' ry='120'/%3E%3Cellipse cx='700' cy='150' rx='120' ry='75'/%3E%3Cellipse cx='100' cy='650' rx='160' ry='110'/%3E%3Cellipse cx='100' cy='650' rx='110' ry='70'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 800px 800px;
+  background-repeat: repeat;
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 0 1px oklch(0.82 0.15 85 / 0.3), 0 8px 32px
+    oklch(0.82 0.15 85 / 0.08);
+  transition: box-shadow 0.25s ease;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.4);
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
