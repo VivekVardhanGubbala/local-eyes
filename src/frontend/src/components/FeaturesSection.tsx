@@ -34,7 +34,11 @@ const FEATURES = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="topo-bg py-20 px-4">
+    <section
+      id="features"
+      aria-labelledby="features-heading"
+      className="topo-bg py-20 px-4"
+    >
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -46,15 +50,18 @@ export function FeaturesSection() {
           <span className="text-xs font-display font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-border text-muted-foreground">
             Built for Extremes
           </span>
-          <h2 className="font-display font-extrabold uppercase text-3xl md:text-4xl text-foreground mt-4 tracking-tight">
+          <h2
+            id="features-heading"
+            className="font-display font-extrabold uppercase text-3xl md:text-4xl text-foreground mt-4 tracking-tight"
+          >
             Why <span style={{ color: "oklch(0.82 0.15 85)" }}>Local-Eyes</span>
             ?
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 list-none">
           {FEATURES.map((feat, i) => (
-            <motion.div
+            <motion.article
               key={feat.title}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -69,8 +76,13 @@ export function FeaturesSection() {
                   background: `${feat.color.slice(0, -1)} / 0.15)`,
                   border: `1px solid ${feat.color.slice(0, -1)} / 0.3)`,
                 }}
+                aria-hidden="true"
               >
-                <feat.icon className="w-6 h-6" style={{ color: feat.color }} />
+                <feat.icon
+                  className="w-6 h-6"
+                  style={{ color: feat.color }}
+                  aria-hidden="true"
+                />
               </div>
               <h3 className="font-display font-bold uppercase tracking-wide text-sm text-foreground mb-0.5">
                 {feat.title}
@@ -84,9 +96,9 @@ export function FeaturesSection() {
               <p className="text-xs font-body text-muted-foreground leading-relaxed">
                 {feat.desc}
               </p>
-            </motion.div>
+            </motion.article>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

@@ -1,0 +1,29 @@
+{
+  "overview": "Local-Eyes is a fully offline-first AI disaster assistance app for India. It features a dual-mode AI chatbot (works with or without internet), comprehensive survival and first-aid guides with 1000+ India-specific references, interactive maps for Andhra Pradesh and Vijayawada, 22+ emergency contacts, hazard detection, multilingual support (Telugu, English, Hindi), voice input, and photo-based emergency identification.",
+  "features": [
+    "Dual-mode AI chatbot (offline 1000+ scenarios + online Gemini with live web search)",
+    "Auto online/offline detection with instant mode switching",
+    "Fully accessible — ARIA landmarks, keyboard nav, screen reader support, 48px touch targets",
+    "Child-friendly UX designed for ease of use at any age",
+    "Multilingual: Telugu, English, Hindi with voice input",
+    "1000+ India-specific survival, medical, and disaster scenarios",
+    "Photo-based emergency identification (cyclone, flood, fire, burns, etc.)",
+    "Interactive offline maps: Andhra Pradesh, Vijayawada, India-wide",
+    "22+ tap-to-call India emergency contacts (112, 108, 100, etc.)",
+    "3D UI with card flip animations and performance fallbacks for low-power devices"
+  ],
+  "category": "emergency-safety",
+  "tags": [
+    "disaster",
+    "emergency",
+    "offline",
+    "ai-chatbot",
+    "india",
+    "andhra-pradesh",
+    "first-aid",
+    "survival",
+    "accessibility",
+    "multilingual"
+  ],
+  "last_updated": "2026-05-05T21:36:52.001Z"
+}

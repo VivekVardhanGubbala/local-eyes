@@ -1,8 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Cpu, MapPin, Radio, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export function Hero() {
+  const { t } = useLanguage();
+
+  const features = [
+    {
+      icon: ShieldCheck,
+      labelKey: "hero.feat_firstaid",
+      color: "oklch(0.48 0.16 25)",
+    },
+    {
+      icon: MapPin,
+      labelKey: "hero.feat_hazards",
+      color: "oklch(0.82 0.15 85)",
+    },
+    {
+      icon: Radio,
+      labelKey: "hero.feat_offline",
+      color: "oklch(0.65 0.18 145)",
+    },
+    { icon: Cpu, labelKey: "hero.feat_localai", color: "oklch(0.55 0.12 220)" },
+  ];
+
   return (
     <section className="topo-bg relative min-h-screen flex items-center pt-24 pb-16 px-4 overflow-hidden">
       {/* Gradient overlay */}
@@ -25,27 +47,27 @@ export function Hero() {
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs font-body tracking-widest uppercase mb-6"
             style={{ color: "oklch(0.82 0.15 85)" }}
           >
-            <Radio className="w-3 h-3" />
-            Zero Connectivity Required
+            <Radio className="w-3 h-3" aria-hidden="true" />
+            {t("hero.badge")}
           </div>
 
           <h1
             className="font-display font-extrabold uppercase leading-[0.9] tracking-tight mb-6 text-foreground"
             style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
           >
-            Offline AI
+            {t("hero.title1")}
             <br />
-            <span style={{ color: "oklch(0.82 0.15 85)" }}>Disaster</span>
+            <span style={{ color: "oklch(0.82 0.15 85)" }}>
+              {t("hero.title2")}
+            </span>
             <br />
-            Assistance.
+            {t("hero.title3")}
             <br />
-            <span className="text-muted-foreground">Always Ready.</span>
+            <span className="text-muted-foreground">{t("hero.title4")}</span>
           </h1>
 
           <p className="font-body text-muted-foreground text-lg mb-8 max-w-lg leading-relaxed">
-            Local-Eyes combines a quantized Small Language Model, offline
-            first-aid knowledge, and edge-based hazard detection — all without
-            internet. Built for when it matters most.
+            {t("hero.subtitle")}
           </p>
 
           <div className="flex flex-wrap gap-3">
@@ -61,9 +83,10 @@ export function Hero() {
                   .getElementById("dashboard")
                   ?.scrollIntoView({ behavior: "smooth" })
               }
+              aria-label="Explore the Local-Eyes emergency dashboard"
               data-ocid="hero.primary_button"
             >
-              Explore Dashboard
+              {t("hero.cta_explore")}
             </Button>
             <Button
               variant="outline"
@@ -74,9 +97,10 @@ export function Hero() {
                   .getElementById("features")
                   ?.scrollIntoView({ behavior: "smooth" })
               }
+              aria-label="Learn more about Local-Eyes features"
               data-ocid="hero.secondary_button"
             >
-              Learn More
+              {t("hero.cta_learn")}
             </Button>
           </div>
         </motion.div>
@@ -111,7 +135,7 @@ export function Hero() {
                       />
                     </div>
                     <span className="font-display font-bold text-xs uppercase tracking-wider text-foreground">
-                      Local AI
+                      {t("hero.feat_localai")}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -134,7 +158,7 @@ export function Hero() {
                   style={{ background: "oklch(0.25 0.007 95)" }}
                 >
                   <p className="text-xs font-body text-muted-foreground">
-                    How do I treat severe bleeding?
+                    {t("hero.chat_q")}
                   </p>
                 </div>
                 <div
@@ -148,46 +172,25 @@ export function Hero() {
                     className="text-xs font-body"
                     style={{ color: "oklch(0.92 0.018 82)" }}
                   >
-                    Apply direct pressure with cloth. Elevate if possible. Do
-                    not remove cloth — add more if soaked...
+                    {t("hero.chat_a")}
                   </p>
                 </div>
 
                 {/* Mini feature list */}
                 <div className="grid grid-cols-2 gap-2 mt-4">
-                  {[
-                    {
-                      icon: ShieldCheck,
-                      label: "First Aid",
-                      color: "oklch(0.48 0.16 25)",
-                    },
-                    {
-                      icon: MapPin,
-                      label: "Hazards",
-                      color: "oklch(0.82 0.15 85)",
-                    },
-                    {
-                      icon: Radio,
-                      label: "Offline",
-                      color: "oklch(0.65 0.18 145)",
-                    },
-                    {
-                      icon: Cpu,
-                      label: "Local AI",
-                      color: "oklch(0.55 0.12 220)",
-                    },
-                  ].map(({ icon: Icon, label, color }) => (
+                  {features.map(({ icon: Icon, labelKey, color }) => (
                     <div
-                      key={label}
+                      key={labelKey}
                       className="flex items-center gap-1.5 p-2 rounded-lg border border-border"
                       style={{ background: "oklch(0.22 0.007 95)" }}
                     >
                       <Icon
                         className="w-3 h-3 flex-shrink-0"
                         style={{ color }}
+                        aria-hidden="true"
                       />
                       <span className="text-xs font-body text-muted-foreground truncate">
-                        {label}
+                        {t(labelKey)}
                       </span>
                     </div>
                   ))}
@@ -207,8 +210,12 @@ export function Hero() {
           duration: 1.8,
           ease: "easeInOut",
         }}
+        aria-hidden="true"
       >
-        <ArrowDown className="w-5 h-5 text-muted-foreground" />
+        <ArrowDown
+          className="w-5 h-5 text-muted-foreground"
+          aria-hidden="true"
+        />
       </motion.div>
     </section>
   );

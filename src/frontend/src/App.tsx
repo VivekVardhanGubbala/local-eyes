@@ -1,9 +1,9 @@
 import { Toaster } from "@/components/ui/sonner";
 import { AlertTriangle } from "lucide-react";
 import { motion } from "motion/react";
-import { AIAssistant } from "./components/AIAssistant";
 import { AndhraPradeshMapCard } from "./components/AndhraPradeshMapCard";
 import { BasicFirstAidCard } from "./components/BasicFirstAidCard";
+import { ChatSection } from "./components/ChatSection";
 import { ClothingGuideCard } from "./components/ClothingGuideCard";
 import { DisasterKitCard } from "./components/DisasterKitCard";
 import { ElectricityGuideCard } from "./components/ElectricityGuideCard";
@@ -16,29 +16,38 @@ import { HazardCard } from "./components/HazardCard";
 import { Hero } from "./components/Hero";
 import { HideoutGuideCard } from "./components/HideoutGuideCard";
 import { Nav } from "./components/Nav";
+import NetworkStatusBanner from "./components/NetworkStatusBanner";
 import { RadioGuideCard } from "./components/RadioGuideCard";
+import { SituationAnalyzer } from "./components/SituationAnalyzer";
 import { SurvivalCard } from "./components/SurvivalCard";
 import { TriageCard } from "./components/TriageCard";
 import { VijayawadaMapCard } from "./components/VijayawadaMapCard";
 import { WaterPurificationCard } from "./components/WaterPurificationCard";
+import { LanguageProvider, useLanguage } from "./i18n/LanguageContext";
 
-const evacuationSigns = [
-  "Rising water entering ground floor",
-  "Smell of gas or smoke",
-  "Cracks spreading in walls or floors",
-  "Loud rumbling or roaring sounds",
-  "Official evacuation order issued",
-];
+const evacuationSigns = ["evac1", "evac2", "evac3", "evac4", "evac5"];
 
-export default function App() {
+function AppContent() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Nav />
-      <main>
+      {/* Skip-to-content: visible on focus, hidden otherwise */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[999] focus:bg-cyan-500 focus:text-black focus:px-4 focus:py-2 focus:rounded-md focus:font-bold"
+      >
+        Skip to main content
+      </a>
+      <NetworkStatusBanner />
+      <header>
+        <Nav />
+      </header>
+      <main id="main-content">
         <Hero />
 
         <section
           id="dashboard"
+          aria-labelledby="dashboard-heading"
           className="py-16 px-4"
           style={{ background: "oklch(0.15 0.007 95)" }}
         >
@@ -51,12 +60,17 @@ export default function App() {
               className="mb-8"
             >
               <span className="text-xs font-display font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-border text-muted-foreground">
-                Offline Dashboard
+                {t("dashboard.label")}
               </span>
-              <h2 className="font-display font-extrabold uppercase text-3xl md:text-4xl text-foreground mt-4 tracking-tight">
-                Emergency{" "}
-                <span style={{ color: "oklch(0.82 0.15 85)" }}>Control</span>{" "}
-                Center
+              <h2
+                id="dashboard-heading"
+                className="font-display font-extrabold uppercase text-3xl md:text-4xl text-foreground mt-4 tracking-tight"
+              >
+                {t("dashboard.title1")}{" "}
+                <span style={{ color: "oklch(0.82 0.15 85)" }}>
+                  {t("dashboard.title2")}
+                </span>{" "}
+                {t("dashboard.title3")}
               </h2>
             </motion.div>
 
@@ -70,6 +84,16 @@ export default function App() {
                 className="md:col-span-2"
               >
                 <EmergencyContactsCard />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.08 }}
+                className="md:col-span-2"
+              >
+                <SituationAnalyzer />
               </motion.div>
 
               <motion.div
@@ -124,7 +148,7 @@ export default function App() {
             >
               <div className="flex items-center gap-3">
                 <span className="text-xs font-display font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-border text-muted-foreground">
-                  Survival Essentials
+                  {t("dashboard.survival_label")}
                 </span>
                 <div
                   className="flex-1 h-px"
@@ -132,9 +156,11 @@ export default function App() {
                 />
               </div>
               <h3 className="font-display font-extrabold uppercase text-2xl md:text-3xl text-foreground mt-3 tracking-tight">
-                Critical{" "}
-                <span style={{ color: "oklch(0.65 0.18 145)" }}>Survival</span>{" "}
-                Knowledge
+                {t("dashboard.survival_title1")}{" "}
+                <span style={{ color: "oklch(0.65 0.18 145)" }}>
+                  {t("dashboard.survival_title2")}
+                </span>{" "}
+                {t("dashboard.survival_title3")}
               </h3>
             </motion.div>
 
@@ -159,12 +185,12 @@ export default function App() {
                   className="text-xs font-display font-bold uppercase tracking-widest"
                   style={{ color: "oklch(0.65 0.2 25)" }}
                 >
-                  Signs You Need Immediate Evacuation
+                  {t("dashboard.evacuation_title")}
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {evacuationSigns.map((sign) => (
-                  <div key={sign} className="flex items-start gap-2">
+                {evacuationSigns.map((key) => (
+                  <div key={key} className="flex items-start gap-2">
                     <span
                       className="text-sm shrink-0"
                       style={{ color: "oklch(0.65 0.2 25)" }}
@@ -175,7 +201,7 @@ export default function App() {
                       className="text-xs font-medium"
                       style={{ color: "oklch(0.88 0.01 95)" }}
                     >
-                      {sign}
+                      {t(`dashboard.${key}`)}
                     </span>
                   </div>
                 ))}
@@ -251,7 +277,7 @@ export default function App() {
             >
               <div className="flex items-center gap-3">
                 <span className="text-xs font-display font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-border text-muted-foreground">
-                  Maps
+                  {t("dashboard.maps_label")}
                 </span>
                 <div
                   className="flex-1 h-px"
@@ -259,9 +285,11 @@ export default function App() {
                 />
               </div>
               <h3 className="font-display font-extrabold uppercase text-2xl md:text-3xl text-foreground mt-3 tracking-tight">
-                Offline{" "}
-                <span style={{ color: "oklch(0.60 0.14 195)" }}>Regional</span>{" "}
-                Maps
+                {t("dashboard.maps_title1")}{" "}
+                <span style={{ color: "oklch(0.60 0.14 195)" }}>
+                  {t("dashboard.maps_title2")}
+                </span>{" "}
+                {t("dashboard.maps_title3")}
               </h3>
             </motion.div>
 
@@ -287,11 +315,24 @@ export default function App() {
         </section>
 
         <FeaturesSection />
+
+        <section id="chat" aria-labelledby="chat-heading">
+          <ChatSection />
+        </section>
       </main>
 
-      <Footer />
-      <AIAssistant />
+      <footer>
+        <Footer />
+      </footer>
       <Toaster />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

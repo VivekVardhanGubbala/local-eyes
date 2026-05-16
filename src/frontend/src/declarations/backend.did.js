@@ -30,9 +30,17 @@ export const FirstAidArticle = IDL.Record({
 });
 export const HazardType = IDL.Variant({
   'flood' : IDL.Null,
+  'landslide' : IDL.Null,
+  'drought' : IDL.Null,
   'earthquake' : IDL.Null,
+  'chemicalSpill' : IDL.Null,
   'fire' : IDL.Null,
   'chemical' : IDL.Null,
+  'tsunami' : IDL.Null,
+  'heatwave' : IDL.Null,
+  'carAccident' : IDL.Null,
+  'pandemic' : IDL.Null,
+  'cyclone' : IDL.Null,
 });
 export const Time = IDL.Int;
 export const HazardSeverity = IDL.Variant({
@@ -47,12 +55,32 @@ export const HazardRecord = IDL.Record({
   'severity' : HazardSeverity,
   'location' : IDL.Text,
 });
+export const SituationAnalysis = IDL.Record({
+  'id' : IDL.Nat,
+  'imageDescription' : IDL.Text,
+  'actionSteps' : IDL.Vec(IDL.Text),
+  'topSituation' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'detectedSituations' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+});
 export const SurvivalCategory = IDL.Variant({
+  'landslide' : IDL.Null,
+  'drought' : IDL.Null,
+  'earthquake' : IDL.Null,
+  'chemicalSpill' : IDL.Null,
+  'generalSurvival' : IDL.Null,
   'fire' : IDL.Null,
   'food' : IDL.Null,
+  'flood_disaster' : IDL.Null,
   'navigation' : IDL.Null,
+  'tsunami' : IDL.Null,
+  'heatwave' : IDL.Null,
+  'carAccident' : IDL.Null,
+  'pandemic' : IDL.Null,
   'shelter' : IDL.Null,
+  'cyclone' : IDL.Null,
   'water' : IDL.Null,
+  'fire_disaster' : IDL.Null,
 });
 export const SurvivalTopic = IDL.Record({
   'title' : IDL.Text,
@@ -77,6 +105,7 @@ export const TriageRecord = IDL.Record({
 export const idlService = IDL.Service({
   'addFirstAidArticle' : IDL.Func([FirstAidArticle], [], []),
   'addHazardRecord' : IDL.Func([HazardRecord], [], []),
+  'addSituationAnalysis' : IDL.Func([SituationAnalysis], [IDL.Nat], []),
   'addSurvivalTopic' : IDL.Func([SurvivalTopic], [], []),
   'addTriageRecord' : IDL.Func([TriageRecord], [], []),
   'getAllFirstAidArticles' : IDL.Func(
@@ -85,6 +114,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getAllHazardRecords' : IDL.Func([], [IDL.Vec(HazardRecord)], ['query']),
+  'getAllSituationAnalyses' : IDL.Func(
+      [],
+      [IDL.Vec(SituationAnalysis)],
+      ['query'],
+    ),
   'getAllSurvivalTopics' : IDL.Func([], [IDL.Vec(SurvivalTopic)], ['query']),
   'getAllTriageRecords' : IDL.Func([], [IDL.Vec(TriageRecord)], ['query']),
   'getFirstAidArticle' : IDL.Func([IDL.Text], [FirstAidArticle], ['query']),
@@ -99,6 +133,7 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'storeSurvivalData' : IDL.Func([], [], []),
 });
 
 export const idlInitArgs = [];
@@ -126,9 +161,17 @@ export const idlFactory = ({ IDL }) => {
   });
   const HazardType = IDL.Variant({
     'flood' : IDL.Null,
+    'landslide' : IDL.Null,
+    'drought' : IDL.Null,
     'earthquake' : IDL.Null,
+    'chemicalSpill' : IDL.Null,
     'fire' : IDL.Null,
     'chemical' : IDL.Null,
+    'tsunami' : IDL.Null,
+    'heatwave' : IDL.Null,
+    'carAccident' : IDL.Null,
+    'pandemic' : IDL.Null,
+    'cyclone' : IDL.Null,
   });
   const Time = IDL.Int;
   const HazardSeverity = IDL.Variant({
@@ -143,12 +186,32 @@ export const idlFactory = ({ IDL }) => {
     'severity' : HazardSeverity,
     'location' : IDL.Text,
   });
+  const SituationAnalysis = IDL.Record({
+    'id' : IDL.Nat,
+    'imageDescription' : IDL.Text,
+    'actionSteps' : IDL.Vec(IDL.Text),
+    'topSituation' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'detectedSituations' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+  });
   const SurvivalCategory = IDL.Variant({
+    'landslide' : IDL.Null,
+    'drought' : IDL.Null,
+    'earthquake' : IDL.Null,
+    'chemicalSpill' : IDL.Null,
+    'generalSurvival' : IDL.Null,
     'fire' : IDL.Null,
     'food' : IDL.Null,
+    'flood_disaster' : IDL.Null,
     'navigation' : IDL.Null,
+    'tsunami' : IDL.Null,
+    'heatwave' : IDL.Null,
+    'carAccident' : IDL.Null,
+    'pandemic' : IDL.Null,
     'shelter' : IDL.Null,
+    'cyclone' : IDL.Null,
     'water' : IDL.Null,
+    'fire_disaster' : IDL.Null,
   });
   const SurvivalTopic = IDL.Record({
     'title' : IDL.Text,
@@ -173,6 +236,7 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'addFirstAidArticle' : IDL.Func([FirstAidArticle], [], []),
     'addHazardRecord' : IDL.Func([HazardRecord], [], []),
+    'addSituationAnalysis' : IDL.Func([SituationAnalysis], [IDL.Nat], []),
     'addSurvivalTopic' : IDL.Func([SurvivalTopic], [], []),
     'addTriageRecord' : IDL.Func([TriageRecord], [], []),
     'getAllFirstAidArticles' : IDL.Func(
@@ -181,6 +245,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllHazardRecords' : IDL.Func([], [IDL.Vec(HazardRecord)], ['query']),
+    'getAllSituationAnalyses' : IDL.Func(
+        [],
+        [IDL.Vec(SituationAnalysis)],
+        ['query'],
+      ),
     'getAllSurvivalTopics' : IDL.Func([], [IDL.Vec(SurvivalTopic)], ['query']),
     'getAllTriageRecords' : IDL.Func([], [IDL.Vec(TriageRecord)], ['query']),
     'getFirstAidArticle' : IDL.Func([IDL.Text], [FirstAidArticle], ['query']),
@@ -195,6 +264,7 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'storeSurvivalData' : IDL.Func([], [], []),
   });
 };
 

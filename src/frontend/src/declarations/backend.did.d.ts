@@ -37,14 +37,42 @@ export type HazardSeverity = { 'low' : null } |
   { 'extreme' : null } |
   { 'moderate' : null };
 export type HazardType = { 'flood' : null } |
+  { 'landslide' : null } |
+  { 'drought' : null } |
   { 'earthquake' : null } |
+  { 'chemicalSpill' : null } |
   { 'fire' : null } |
-  { 'chemical' : null };
-export type SurvivalCategory = { 'fire' : null } |
+  { 'chemical' : null } |
+  { 'tsunami' : null } |
+  { 'heatwave' : null } |
+  { 'carAccident' : null } |
+  { 'pandemic' : null } |
+  { 'cyclone' : null };
+export interface SituationAnalysis {
+  'id' : bigint,
+  'imageDescription' : string,
+  'actionSteps' : Array<string>,
+  'topSituation' : string,
+  'timestamp' : bigint,
+  'detectedSituations' : Array<[string, bigint]>,
+}
+export type SurvivalCategory = { 'landslide' : null } |
+  { 'drought' : null } |
+  { 'earthquake' : null } |
+  { 'chemicalSpill' : null } |
+  { 'generalSurvival' : null } |
+  { 'fire' : null } |
   { 'food' : null } |
+  { 'flood_disaster' : null } |
   { 'navigation' : null } |
+  { 'tsunami' : null } |
+  { 'heatwave' : null } |
+  { 'carAccident' : null } |
+  { 'pandemic' : null } |
   { 'shelter' : null } |
-  { 'water' : null };
+  { 'cyclone' : null } |
+  { 'water' : null } |
+  { 'fire_disaster' : null };
 export interface SurvivalTopic {
   'title' : string,
   'content' : string,
@@ -66,10 +94,12 @@ export type TriageStatus = { 'minor' : null } |
 export interface _SERVICE {
   'addFirstAidArticle' : ActorMethod<[FirstAidArticle], undefined>,
   'addHazardRecord' : ActorMethod<[HazardRecord], undefined>,
+  'addSituationAnalysis' : ActorMethod<[SituationAnalysis], bigint>,
   'addSurvivalTopic' : ActorMethod<[SurvivalTopic], undefined>,
   'addTriageRecord' : ActorMethod<[TriageRecord], undefined>,
   'getAllFirstAidArticles' : ActorMethod<[], Array<FirstAidArticle>>,
   'getAllHazardRecords' : ActorMethod<[], Array<HazardRecord>>,
+  'getAllSituationAnalyses' : ActorMethod<[], Array<SituationAnalysis>>,
   'getAllSurvivalTopics' : ActorMethod<[], Array<SurvivalTopic>>,
   'getAllTriageRecords' : ActorMethod<[], Array<TriageRecord>>,
   'getFirstAidArticle' : ActorMethod<[string], FirstAidArticle>,
@@ -78,6 +108,7 @@ export interface _SERVICE {
     [string],
     { 'survival' : Array<SurvivalTopic>, 'firstAid' : Array<FirstAidArticle> }
   >,
+  'storeSurvivalData' : ActorMethod<[], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

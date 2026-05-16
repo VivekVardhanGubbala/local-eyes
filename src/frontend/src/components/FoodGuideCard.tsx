@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Skull,
 } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const kitItems = [
   {
@@ -169,18 +170,27 @@ const storageTips = [
 ];
 
 export function FoodGuideCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="food-heading"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <Apple className="w-4 h-4" style={{ color: "oklch(0.82 0.15 85)" }} />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Food Guide
-          </span>
+          <Apple
+            className="w-4 h-4"
+            style={{ color: "oklch(0.82 0.15 85)" }}
+            aria-hidden="true"
+          />
+          <h2
+            id="food-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("food.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -190,7 +200,7 @@ export function FoodGuideCard() {
             border: "1px solid oklch(0.82 0.15 85 / 0.3)",
           }}
         >
-          Offline
+          {t("food.badge")}
         </span>
       </div>
 
@@ -238,27 +248,17 @@ export function FoodGuideCard() {
           <ScrollArea className="h-48">
             <div className="space-y-3 pr-2">
               <p className="text-xs" style={{ color: "oklch(0.74 0.015 80)" }}>
-                <span
-                  style={{ color: "oklch(0.82 0.15 85)" }}
-                  className="font-bold"
-                >
-                  2,000 kcal/person/day
-                </span>{" "}
-                target. Pack enough for{" "}
-                <span className="font-semibold text-foreground">
-                  72 hours minimum
-                </span>
-                .
+                {t("food.kit_desc")}
               </p>
               {kitItems.map((group) => (
                 <div key={group.group}>
-                  <p
+                  <h3
                     className="text-xs font-bold uppercase tracking-wider mb-1.5"
                     style={{ color: group.color }}
                   >
                     {group.group}
-                  </p>
-                  <ul className="space-y-1">
+                  </h3>
+                  <ul className="space-y-1" aria-label={`${group.group} items`}>
                     {group.items.map((item) => (
                       <li
                         key={item}
@@ -267,6 +267,7 @@ export function FoodGuideCard() {
                         <CheckCircle2
                           className="w-3.5 h-3.5 shrink-0"
                           style={{ color: "oklch(0.65 0.18 145)" }}
+                          aria-hidden="true"
                         />
                         {item}
                       </li>
@@ -286,8 +287,7 @@ export function FoodGuideCard() {
                 className="text-xs mb-2"
                 style={{ color: "oklch(0.74 0.015 80)" }}
               >
-                Wild edible plants & protein sources found in Indian disaster
-                zones.
+                {t("food.edible_desc")}
               </p>
               {edibleItems.map((item) => (
                 <div
@@ -303,7 +303,7 @@ export function FoodGuideCard() {
                       border: "1px solid oklch(0.65 0.18 145 / 0.3)",
                     }}
                   >
-                    SAFE
+                    {t("food.safe_badge")}
                   </span>
                   <div>
                     <p className="text-xs font-semibold text-foreground">
@@ -342,12 +342,13 @@ export function FoodGuideCard() {
                 <AlertTriangle
                   className="w-4 h-4 shrink-0"
                   style={{ color: "oklch(0.65 0.2 25)" }}
+                  aria-hidden="true"
                 />
                 <span
                   className="text-xs font-bold uppercase tracking-wider"
                   style={{ color: "oklch(0.65 0.2 25)" }}
                 >
-                  ⚠ NEVER EAT THESE
+                  {t("food.never_eat")}
                 </span>
               </div>
               {dangerItems.map((item) => (
@@ -364,7 +365,7 @@ export function FoodGuideCard() {
                       border: "1px solid oklch(0.48 0.16 25 / 0.4)",
                     }}
                   >
-                    DANGER
+                    {t("food.danger_badge")}
                   </span>
                   <div>
                     <p
@@ -394,7 +395,7 @@ export function FoodGuideCard() {
                 className="text-xs mb-2"
                 style={{ color: "oklch(0.74 0.015 80)" }}
               >
-                Food safety rules for disaster zones — no refrigeration assumed.
+                {t("food.storage_desc")}
               </p>
               {storageTips.map(({ num, tip }) => (
                 <div
@@ -415,6 +416,6 @@ export function FoodGuideCard() {
           </ScrollArea>
         </TabsContent>
       </Tabs>
-    </div>
+    </section>
   );
 }

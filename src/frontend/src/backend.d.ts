@@ -34,6 +34,14 @@ export interface SurvivalTopic {
     tags: Array<string>;
     category: SurvivalCategory;
 }
+export interface SituationAnalysis {
+    id: bigint;
+    imageDescription: string;
+    actionSteps: Array<string>;
+    topSituation: string;
+    timestamp: bigint;
+    detectedSituations: Array<[string, bigint]>;
+}
 export enum FirstAidCategory {
     CPR = "CPR",
     bleeding = "bleeding",
@@ -55,16 +63,36 @@ export enum HazardSeverity {
 }
 export enum HazardType {
     flood = "flood",
+    landslide = "landslide",
+    drought = "drought",
     earthquake = "earthquake",
+    chemicalSpill = "chemicalSpill",
     fire = "fire",
-    chemical = "chemical"
+    chemical = "chemical",
+    tsunami = "tsunami",
+    heatwave = "heatwave",
+    carAccident = "carAccident",
+    pandemic = "pandemic",
+    cyclone = "cyclone"
 }
 export enum SurvivalCategory {
+    landslide = "landslide",
+    drought = "drought",
+    earthquake = "earthquake",
+    chemicalSpill = "chemicalSpill",
+    generalSurvival = "generalSurvival",
     fire = "fire",
     food = "food",
+    flood_disaster = "flood_disaster",
     navigation = "navigation",
+    tsunami = "tsunami",
+    heatwave = "heatwave",
+    carAccident = "carAccident",
+    pandemic = "pandemic",
     shelter = "shelter",
-    water = "water"
+    cyclone = "cyclone",
+    water = "water",
+    fire_disaster = "fire_disaster"
 }
 export enum TriageStatus {
     minor = "minor",
@@ -75,10 +103,12 @@ export enum TriageStatus {
 export interface backendInterface {
     addFirstAidArticle(article: FirstAidArticle): Promise<void>;
     addHazardRecord(record: HazardRecord): Promise<void>;
+    addSituationAnalysis(analysis: SituationAnalysis): Promise<bigint>;
     addSurvivalTopic(topic: SurvivalTopic): Promise<void>;
     addTriageRecord(record: TriageRecord): Promise<void>;
     getAllFirstAidArticles(): Promise<Array<FirstAidArticle>>;
     getAllHazardRecords(): Promise<Array<HazardRecord>>;
+    getAllSituationAnalyses(): Promise<Array<SituationAnalysis>>;
     getAllSurvivalTopics(): Promise<Array<SurvivalTopic>>;
     getAllTriageRecords(): Promise<Array<TriageRecord>>;
     getFirstAidArticle(title: string): Promise<FirstAidArticle>;
@@ -87,4 +117,5 @@ export interface backendInterface {
         survival: Array<SurvivalTopic>;
         firstAid: Array<FirstAidArticle>;
     }>;
+    storeSurvivalData(): Promise<void>;
 }

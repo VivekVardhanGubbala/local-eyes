@@ -4,8 +4,10 @@ import type {
   HazardRecord,
   SurvivalTopic,
   TriageRecord,
-} from "../backend.d";
+} from "../types/localTypes";
 import { useActor } from "./useActor";
+
+type AnyActor = Record<string, (...args: unknown[]) => Promise<unknown>>;
 
 export function useFirstAidArticles() {
   const { actor, isFetching } = useActor();
@@ -13,10 +15,11 @@ export function useFirstAidArticles() {
     queryKey: ["firstAid"],
     queryFn: async () => {
       if (!actor) return [];
-      const result = await actor.getAllFirstAidArticles();
+      const a = actor as unknown as AnyActor;
+      const result = (await a.getAllFirstAidArticles()) as FirstAidArticle[];
       if (result.length === 0) {
-        await actor.initializeData();
-        return actor.getAllFirstAidArticles();
+        await a.initializeData();
+        return a.getAllFirstAidArticles() as Promise<FirstAidArticle[]>;
       }
       return result;
     },
@@ -30,7 +33,9 @@ export function useHazardAlerts() {
     queryKey: ["hazards"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllHazardRecords();
+      return (actor as unknown as AnyActor).getAllHazardRecords() as Promise<
+        HazardRecord[]
+      >;
     },
     enabled: !!actor && !isFetching,
   });
@@ -42,7 +47,9 @@ export function useSurvivalTopics() {
     queryKey: ["survival"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllSurvivalTopics();
+      return (actor as unknown as AnyActor).getAllSurvivalTopics() as Promise<
+        SurvivalTopic[]
+      >;
     },
     enabled: !!actor && !isFetching,
   });
@@ -54,7 +61,9 @@ export function useTriageRecords() {
     queryKey: ["triage"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllTriageRecords();
+      return (actor as unknown as AnyActor).getAllTriageRecords() as Promise<
+        TriageRecord[]
+      >;
     },
     enabled: !!actor && !isFetching,
   });
@@ -66,7 +75,7 @@ export function useAddTriageRecord() {
   return useMutation({
     mutationFn: async (record: TriageRecord) => {
       if (!actor) throw new Error("No actor");
-      return actor.addTriageRecord(record);
+      return (actor as unknown as AnyActor).addTriageRecord(record as unknown);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["triage"] }),
   });
@@ -78,7 +87,7 @@ export function useSearchArticles(term: string) {
     queryKey: ["search", term],
     queryFn: async () => {
       if (!actor || !term.trim()) return { firstAid: [], survival: [] };
-      return actor.searchArticles(term);
+      return (actor as unknown as AnyActor).searchArticles(term);
     },
     enabled: !!actor && !isFetching && term.trim().length > 0,
   });

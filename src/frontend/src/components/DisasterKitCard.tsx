@@ -9,6 +9,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type KitItem = { item: string; note?: string };
 type KitSection = {
@@ -136,20 +137,26 @@ const sections: KitSection[] = [
 ];
 
 export function DisasterKitCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="kit-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <Backpack
             className="w-4 h-4"
             style={{ color: "oklch(0.82 0.15 85)" }}
+            aria-hidden="true"
           />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Disaster Kit
-          </span>
+          <h2
+            id="kit-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("kit.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -159,7 +166,7 @@ export function DisasterKitCard() {
             border: "1px solid oklch(0.82 0.15 85 / 0.3)",
           }}
         >
-          72-hr Rule
+          {t("kit.badge")}
         </span>
       </div>
 
@@ -198,6 +205,7 @@ export function DisasterKitCard() {
                     <CheckCircle2
                       className="w-3.5 h-3.5 shrink-0 mt-0.5"
                       style={{ color: s.color }}
+                      aria-hidden="true"
                     />
                     <div>
                       <p className="text-xs font-semibold text-foreground">
@@ -231,12 +239,12 @@ export function DisasterKitCard() {
         <Zap
           className="w-3.5 h-3.5 shrink-0 mt-0.5"
           style={{ color: "oklch(0.82 0.15 85)" }}
+          aria-hidden="true"
         />
         <p className="text-xs" style={{ color: "oklch(0.82 0.15 85)" }}>
-          Pack everything in a <strong>waterproof backpack or dry bag</strong>.
-          Keep it near your exit, ready to grab in <strong>60 seconds</strong>.
+          {t("kit.tip")}
         </p>
       </div>
-    </div>
+    </section>
   );
 }

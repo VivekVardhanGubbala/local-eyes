@@ -32,9 +32,10 @@ const godavariRiver =
 
 export function AndhraPradeshMapCard() {
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="ap-map-heading"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
@@ -42,10 +43,14 @@ export function AndhraPradeshMapCard() {
           <MapPin
             className="w-4 h-4"
             style={{ color: "oklch(0.82 0.15 85)" }}
+            aria-hidden="true"
           />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
+          <h2
+            id="ap-map-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
             Andhra Pradesh — Offline Map
-          </span>
+          </h2>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -83,10 +88,15 @@ export function AndhraPradeshMapCard() {
             viewBox="0 0 480 520"
             className="w-full"
             role="img"
-            aria-label="Andhra Pradesh state map"
+            aria-labelledby="ap-map-svg-title ap-map-svg-desc"
             style={{ maxHeight: "520px" }}
           >
-            <title>Andhra Pradesh Offline Map</title>
+            <title id="ap-map-svg-title">Andhra Pradesh Offline Map</title>
+            <desc id="ap-map-svg-desc">
+              Map of Andhra Pradesh showing 11 cities including state capital
+              Vijayawada, Krishna and Godavari rivers, and cyclone-prone coastal
+              zones
+            </desc>
 
             {/* Grid lines */}
             {[100, 150, 200, 250, 300, 350, 400, 450].map((x) => (
@@ -424,7 +434,19 @@ export function AndhraPradeshMapCard() {
             🗺 Fully offline — no internet needed
           </span>
         </div>
+        {/* Screen-reader accessible city list */}
+        <ul className="sr-only" aria-label="Cities on Andhra Pradesh map">
+          {cities.map((city) => (
+            <li key={city.name}>
+              {city.name}
+              {city.capital ? " (State Capital)" : ""}
+            </li>
+          ))}
+          <li>Krishna River</li>
+          <li>Godavari River</li>
+          <li>Cyclone-prone Eastern Coastal Zone</li>
+        </ul>
       </div>
-    </div>
+    </section>
   );
 }

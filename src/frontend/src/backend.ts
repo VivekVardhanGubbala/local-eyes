@@ -116,6 +116,14 @@ export interface SurvivalTopic {
     tags: Array<string>;
     category: SurvivalCategory;
 }
+export interface SituationAnalysis {
+    id: bigint;
+    imageDescription: string;
+    actionSteps: Array<string>;
+    topSituation: string;
+    timestamp: bigint;
+    detectedSituations: Array<[string, bigint]>;
+}
 export enum FirstAidCategory {
     CPR = "CPR",
     bleeding = "bleeding",
@@ -137,16 +145,36 @@ export enum HazardSeverity {
 }
 export enum HazardType {
     flood = "flood",
+    landslide = "landslide",
+    drought = "drought",
     earthquake = "earthquake",
+    chemicalSpill = "chemicalSpill",
     fire = "fire",
-    chemical = "chemical"
+    chemical = "chemical",
+    tsunami = "tsunami",
+    heatwave = "heatwave",
+    carAccident = "carAccident",
+    pandemic = "pandemic",
+    cyclone = "cyclone"
 }
 export enum SurvivalCategory {
+    landslide = "landslide",
+    drought = "drought",
+    earthquake = "earthquake",
+    chemicalSpill = "chemicalSpill",
+    generalSurvival = "generalSurvival",
     fire = "fire",
     food = "food",
+    flood_disaster = "flood_disaster",
     navigation = "navigation",
+    tsunami = "tsunami",
+    heatwave = "heatwave",
+    carAccident = "carAccident",
+    pandemic = "pandemic",
     shelter = "shelter",
-    water = "water"
+    cyclone = "cyclone",
+    water = "water",
+    fire_disaster = "fire_disaster"
 }
 export enum TriageStatus {
     minor = "minor",
@@ -157,10 +185,12 @@ export enum TriageStatus {
 export interface backendInterface {
     addFirstAidArticle(article: FirstAidArticle): Promise<void>;
     addHazardRecord(record: HazardRecord): Promise<void>;
+    addSituationAnalysis(analysis: SituationAnalysis): Promise<bigint>;
     addSurvivalTopic(topic: SurvivalTopic): Promise<void>;
     addTriageRecord(record: TriageRecord): Promise<void>;
     getAllFirstAidArticles(): Promise<Array<FirstAidArticle>>;
     getAllHazardRecords(): Promise<Array<HazardRecord>>;
+    getAllSituationAnalyses(): Promise<Array<SituationAnalysis>>;
     getAllSurvivalTopics(): Promise<Array<SurvivalTopic>>;
     getAllTriageRecords(): Promise<Array<TriageRecord>>;
     getFirstAidArticle(title: string): Promise<FirstAidArticle>;
@@ -169,6 +199,7 @@ export interface backendInterface {
         survival: Array<SurvivalTopic>;
         firstAid: Array<FirstAidArticle>;
     }>;
+    storeSurvivalData(): Promise<void>;
 }
 import type { FirstAidArticle as _FirstAidArticle, FirstAidCategory as _FirstAidCategory, FirstAidSeverity as _FirstAidSeverity, HazardRecord as _HazardRecord, HazardSeverity as _HazardSeverity, HazardType as _HazardType, SurvivalCategory as _SurvivalCategory, SurvivalTopic as _SurvivalTopic, Time as _Time, TriageRecord as _TriageRecord, TriageStatus as _TriageStatus } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -198,6 +229,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.addHazardRecord(to_candid_HazardRecord_n7(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async addSituationAnalysis(arg0: SituationAnalysis): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addSituationAnalysis(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addSituationAnalysis(arg0);
             return result;
         }
     }
@@ -255,6 +300,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllHazardRecords();
             return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAllSituationAnalyses(): Promise<Array<SituationAnalysis>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllSituationAnalyses();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllSituationAnalyses();
+            return result;
         }
     }
     async getAllSurvivalTopics(): Promise<Array<SurvivalTopic>> {
@@ -328,6 +387,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.searchArticles(arg0);
             return from_candid_record_n45(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async storeSurvivalData(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.storeSurvivalData();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.storeSurvivalData();
+            return result;
         }
     }
 }
@@ -478,13 +551,29 @@ function from_candid_variant_n27(_uploadFile: (file: ExternalBlob) => Promise<Ui
 function from_candid_variant_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     flood: null;
 } | {
+    landslide: null;
+} | {
+    drought: null;
+} | {
     earthquake: null;
+} | {
+    chemicalSpill: null;
 } | {
     fire: null;
 } | {
     chemical: null;
+} | {
+    tsunami: null;
+} | {
+    heatwave: null;
+} | {
+    carAccident: null;
+} | {
+    pandemic: null;
+} | {
+    cyclone: null;
 }): HazardType {
-    return "flood" in value ? HazardType.flood : "earthquake" in value ? HazardType.earthquake : "fire" in value ? HazardType.fire : "chemical" in value ? HazardType.chemical : value;
+    return "flood" in value ? HazardType.flood : "landslide" in value ? HazardType.landslide : "drought" in value ? HazardType.drought : "earthquake" in value ? HazardType.earthquake : "chemicalSpill" in value ? HazardType.chemicalSpill : "fire" in value ? HazardType.fire : "chemical" in value ? HazardType.chemical : "tsunami" in value ? HazardType.tsunami : "heatwave" in value ? HazardType.heatwave : "carAccident" in value ? HazardType.carAccident : "pandemic" in value ? HazardType.pandemic : "cyclone" in value ? HazardType.cyclone : value;
 }
 function from_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     low: null;
@@ -498,17 +587,41 @@ function from_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Ui
     return "low" in value ? HazardSeverity.low : "severe" in value ? HazardSeverity.severe : "extreme" in value ? HazardSeverity.extreme : "moderate" in value ? HazardSeverity.moderate : value;
 }
 function from_candid_variant_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    landslide: null;
+} | {
+    drought: null;
+} | {
+    earthquake: null;
+} | {
+    chemicalSpill: null;
+} | {
+    generalSurvival: null;
+} | {
     fire: null;
 } | {
     food: null;
 } | {
+    flood_disaster: null;
+} | {
     navigation: null;
+} | {
+    tsunami: null;
+} | {
+    heatwave: null;
+} | {
+    carAccident: null;
+} | {
+    pandemic: null;
 } | {
     shelter: null;
 } | {
+    cyclone: null;
+} | {
     water: null;
+} | {
+    fire_disaster: null;
 }): SurvivalCategory {
-    return "fire" in value ? SurvivalCategory.fire : "food" in value ? SurvivalCategory.food : "navigation" in value ? SurvivalCategory.navigation : "shelter" in value ? SurvivalCategory.shelter : "water" in value ? SurvivalCategory.water : value;
+    return "landslide" in value ? SurvivalCategory.landslide : "drought" in value ? SurvivalCategory.drought : "earthquake" in value ? SurvivalCategory.earthquake : "chemicalSpill" in value ? SurvivalCategory.chemicalSpill : "generalSurvival" in value ? SurvivalCategory.generalSurvival : "fire" in value ? SurvivalCategory.fire : "food" in value ? SurvivalCategory.food : "flood_disaster" in value ? SurvivalCategory.flood_disaster : "navigation" in value ? SurvivalCategory.navigation : "tsunami" in value ? SurvivalCategory.tsunami : "heatwave" in value ? SurvivalCategory.heatwave : "carAccident" in value ? SurvivalCategory.carAccident : "pandemic" in value ? SurvivalCategory.pandemic : "shelter" in value ? SurvivalCategory.shelter : "cyclone" in value ? SurvivalCategory.cyclone : "water" in value ? SurvivalCategory.water : "fire_disaster" in value ? SurvivalCategory.fire_disaster : value;
 }
 function from_candid_variant_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     minor: null;
@@ -644,20 +757,52 @@ function to_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function to_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HazardType): {
     flood: null;
 } | {
+    landslide: null;
+} | {
+    drought: null;
+} | {
     earthquake: null;
+} | {
+    chemicalSpill: null;
 } | {
     fire: null;
 } | {
     chemical: null;
+} | {
+    tsunami: null;
+} | {
+    heatwave: null;
+} | {
+    carAccident: null;
+} | {
+    pandemic: null;
+} | {
+    cyclone: null;
 } {
     return value == HazardType.flood ? {
         flood: null
+    } : value == HazardType.landslide ? {
+        landslide: null
+    } : value == HazardType.drought ? {
+        drought: null
     } : value == HazardType.earthquake ? {
         earthquake: null
+    } : value == HazardType.chemicalSpill ? {
+        chemicalSpill: null
     } : value == HazardType.fire ? {
         fire: null
     } : value == HazardType.chemical ? {
         chemical: null
+    } : value == HazardType.tsunami ? {
+        tsunami: null
+    } : value == HazardType.heatwave ? {
+        heatwave: null
+    } : value == HazardType.carAccident ? {
+        carAccident: null
+    } : value == HazardType.pandemic ? {
+        pandemic: null
+    } : value == HazardType.cyclone ? {
+        cyclone: null
     } : value;
 }
 function to_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: HazardSeverity): {
@@ -680,26 +825,74 @@ function to_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint
     } : value;
 }
 function to_candid_variant_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SurvivalCategory): {
+    landslide: null;
+} | {
+    drought: null;
+} | {
+    earthquake: null;
+} | {
+    chemicalSpill: null;
+} | {
+    generalSurvival: null;
+} | {
     fire: null;
 } | {
     food: null;
 } | {
+    flood_disaster: null;
+} | {
     navigation: null;
+} | {
+    tsunami: null;
+} | {
+    heatwave: null;
+} | {
+    carAccident: null;
+} | {
+    pandemic: null;
 } | {
     shelter: null;
 } | {
+    cyclone: null;
+} | {
     water: null;
+} | {
+    fire_disaster: null;
 } {
-    return value == SurvivalCategory.fire ? {
+    return value == SurvivalCategory.landslide ? {
+        landslide: null
+    } : value == SurvivalCategory.drought ? {
+        drought: null
+    } : value == SurvivalCategory.earthquake ? {
+        earthquake: null
+    } : value == SurvivalCategory.chemicalSpill ? {
+        chemicalSpill: null
+    } : value == SurvivalCategory.generalSurvival ? {
+        generalSurvival: null
+    } : value == SurvivalCategory.fire ? {
         fire: null
     } : value == SurvivalCategory.food ? {
         food: null
+    } : value == SurvivalCategory.flood_disaster ? {
+        flood_disaster: null
     } : value == SurvivalCategory.navigation ? {
         navigation: null
+    } : value == SurvivalCategory.tsunami ? {
+        tsunami: null
+    } : value == SurvivalCategory.heatwave ? {
+        heatwave: null
+    } : value == SurvivalCategory.carAccident ? {
+        carAccident: null
+    } : value == SurvivalCategory.pandemic ? {
+        pandemic: null
     } : value == SurvivalCategory.shelter ? {
         shelter: null
+    } : value == SurvivalCategory.cyclone ? {
+        cyclone: null
     } : value == SurvivalCategory.water ? {
         water: null
+    } : value == SurvivalCategory.fire_disaster ? {
+        fire_disaster: null
     } : value;
 }
 function to_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TriageStatus): {

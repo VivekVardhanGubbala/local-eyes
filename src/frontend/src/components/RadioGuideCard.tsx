@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Radio } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const freqs = [
   {
@@ -52,20 +53,26 @@ const batteryTips = [
 ];
 
 export function RadioGuideCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="radio-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <Radio
             className="w-4 h-4"
             style={{ color: "oklch(0.60 0.14 195)" }}
+            aria-hidden="true"
           />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Radio Communication
-          </span>
+          <h2
+            id="radio-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("radio.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -75,7 +82,7 @@ export function RadioGuideCard() {
             border: "1px solid oklch(0.60 0.14 195 / 0.3)",
           }}
         >
-          Comms
+          {t("radio.badge")}
         </span>
       </div>
 
@@ -86,18 +93,19 @@ export function RadioGuideCard() {
             className="rounded-lg p-3"
             style={{ background: "oklch(0.15 0.007 95)" }}
           >
-            <p
+            <h3
               className="text-xs font-bold uppercase tracking-wide mb-2"
               style={{ color: "oklch(0.60 0.14 195)" }}
             >
-              Basic Operation
-            </p>
-            <ol className="space-y-1">
+              {t("radio.basic_op")}
+            </h3>
+            <ol className="space-y-1" aria-label="Radio operation steps">
               {operateSteps.map((s) => (
                 <li key={s} className="flex gap-2 text-xs">
                   <span
                     className="shrink-0 font-bold"
                     style={{ color: "oklch(0.82 0.15 85)" }}
+                    aria-hidden="true"
                   >
                     ›
                   </span>
@@ -116,7 +124,7 @@ export function RadioGuideCard() {
               className="text-xs font-bold uppercase tracking-wide mb-2"
               style={{ color: "oklch(0.65 0.18 145)" }}
             >
-              Emergency Frequencies
+              {t("radio.frequencies")}
             </p>
             <div className="space-y-1.5">
               {freqs.map((f) => (
@@ -136,20 +144,21 @@ export function RadioGuideCard() {
           </div>
 
           {/* Help Script */}
-          <div
+          <section
             className="rounded-lg p-3"
             style={{
               background: "oklch(0.15 0.007 95)",
               border: "1px solid oklch(0.48 0.16 25 / 0.3)",
             }}
+            aria-label="Emergency radio help script"
           >
-            <p
+            <h3
               className="text-xs font-bold uppercase tracking-wide mb-2"
               style={{ color: "oklch(0.65 0.2 25)" }}
             >
-              Calling for Help — Script
-            </p>
-            <ol className="space-y-0.5">
+              {t("radio.help_script")}
+            </h3>
+            <ol className="space-y-0.5" aria-label="Help call script steps">
               {helpScript.map((line) => (
                 <li
                   key={line}
@@ -164,7 +173,7 @@ export function RadioGuideCard() {
                 </li>
               ))}
             </ol>
-          </div>
+          </section>
 
           {/* Morse SOS */}
           <div
@@ -175,7 +184,7 @@ export function RadioGuideCard() {
               className="text-xs font-bold uppercase tracking-wide mb-2"
               style={{ color: "oklch(0.82 0.15 85)" }}
             >
-              Morse SOS — · · · — — — · · ·
+              {t("radio.morse")}
             </p>
             <div className="flex gap-2 mb-2">
               {morseLetters.map((m) => (
@@ -210,28 +219,29 @@ export function RadioGuideCard() {
               className="text-xs font-bold uppercase tracking-wide mb-2"
               style={{ color: "oklch(0.74 0.12 60)" }}
             >
-              Battery Conservation
+              {t("radio.battery")}
             </p>
-            <ul className="space-y-1">
-              {batteryTips.map((t) => (
+            <ul className="space-y-1" aria-label="Battery conservation tips">
+              {batteryTips.map((tip) => (
                 <li
-                  key={t}
+                  key={tip}
                   className="text-xs flex items-start gap-1.5"
                   style={{ color: "oklch(0.74 0.015 80)" }}
                 >
                   <span
                     className="shrink-0"
                     style={{ color: "oklch(0.74 0.12 60)" }}
+                    aria-hidden="true"
                   >
                     ›
                   </span>
-                  {t}
+                  {tip}
                 </li>
               ))}
             </ul>
           </div>
         </div>
       </ScrollArea>
-    </div>
+    </section>
   );
 }

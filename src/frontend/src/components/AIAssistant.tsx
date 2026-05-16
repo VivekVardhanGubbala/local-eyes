@@ -2,9 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
+import { MEDICAL_KB_ENTRIES } from "@/data/medicalData";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   Bot,
   MessageCircle,
+  Mic,
+  MicOff,
   RefreshCw,
   Send,
   Wifi,
@@ -13,6 +17,68 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+// LanguageContext wired via useLanguage hook above
+
+// TypeScript declarations for the Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  onstart: (() => void) | null;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  readonly isFinal: boolean;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  readonly transcript: string;
+  readonly confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+  readonly message: string;
+}
+
+// Language code map for speech recognition
+const speechLangMap: Record<string, string> = {
+  en: "en-IN",
+  te: "te-IN",
+  hi: "hi-IN",
+};
+
+const isSpeechSupported =
+  typeof window !== "undefined" &&
+  ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
 type Message = {
   id: string;
@@ -100,12 +166,9 @@ const knowledgeBase: KBEntry[] = [
 1. Cook all meat and eggs thoroughly (internal temp above 70C).
 2. Reheat leftovers until steaming hot.
 3. Keep raw meat separate from cooked food.
-4. Clean utensils between raw and cooked food.
-5. Eat within 2 hours if no refrigeration.
 
 **CRITICAL — Floodwater Contamination**
 ⚠️ Any food touched by floodwater must be DISCARDED.
-⚠️ This includes canned goods with damaged seals.
 ⚠️ Floodwater contains sewage, chemicals, and pathogens.`,
   },
   {
@@ -124,31 +187,24 @@ const knowledgeBase: KBEntry[] = [
 
 **Adult CPR**
 1. Check scene safety, then tap shoulders: "Are you OK?"
-2. Call for help — shout for someone to assist.
+2. Call for help — shout for someone to assist. Call 108.
 3. Lay person flat on their back on a firm surface.
 4. Place heel of one hand on CENTER of chest (lower sternum).
 5. Place other hand on top, fingers interlaced.
 6. Compress chest at least 5cm deep at 100–120 beats/min.
 7. After 30 compressions: tilt head, lift chin, give 2 rescue breaths.
-8. Each breath: 1 second, watch chest rise.
-9. Continue 30:2 ratio until help arrives or person breathes.
+8. Continue 30:2 ratio until help arrives or person breathes.
 
 **Child CPR (1–12 years)**
-1. Use 1 or 2 hands depending on child's size.
-2. Compress 4–5cm deep.
-✅ Begin with 5 rescue breaths before compressions.
+1. Give 5 initial rescue breaths FIRST (unlike adult).
+2. Use 1 or 2 hands depending on child's size. Compress 5cm deep.
 
 **Infant CPR (under 1 year)**
-1. Use 2 fingers on chest center.
+1. 2 fingers BELOW nipple line on sternum.
 2. Compress 4cm deep.
 3. Cover infant's mouth AND nose with your mouth.
+4. Give 5 initial rescue breaths first.
 
-**AED Use**
-1. Turn on AED and follow voice instructions.
-2. Attach pads as shown in diagrams.
-3. Ensure no one touches person when AED analyzes.
-4. Press shock button if advised.
-5. Immediately resume CPR after shock.
 ⚠️ Do not stop CPR unless person recovers or help arrives.`,
   },
   {
@@ -170,22 +226,16 @@ const knowledgeBase: KBEntry[] = [
 3. Hold for 10 minutes — do NOT lift cloth (disturbs clotting).
 4. Clean the wound — rinse with clean running water for 5 minutes.
 5. Remove debris — use clean tweezers for visible particles.
-6. Apply antiseptic — Betadine/Dettol around wound edges.
-7. Cover the wound — sterile bandage or clean cloth.
-8. Elevate the limb — keep above heart level to reduce bleeding.
+6. Apply antiseptic — Betadine 5%/Savlon (diluted 1:30) around wound edges.
+7. Apply Neosporin/Soframycin ointment — thin layer over wound.
+8. Cover the wound — sterile bandage or clean cloth.
 
 **Signs of Infection (seek help immediately)**
 ⚠️ Increasing redness or warmth around wound
 ⚠️ Swelling that worsens after 24 hours
 ⚠️ Pus or cloudy discharge
 ⚠️ Red streaks spreading from wound
-⚠️ Fever above 38 degrees C
-
-**When to Seek Medical Help**
-- Deep cuts that may need stitches
-- Puncture wounds or animal bites
-- Wounds on face or hands
-- Signs of infection present`,
+⚠️ Fever above 38 degrees C`,
   },
   {
     keywords: ["burn", "scald", "hot water", "fire burn", "degree"],
@@ -200,19 +250,14 @@ const knowledgeBase: KBEntry[] = [
 ⚠️ Do NOT use ice, butter, toothpaste, or flour on burns.
 
 **Burn Types**
-✅ 1st Degree — Red, dry, painful. Treat with cool water, aloe. No professional help unless large area.
+✅ 1st Degree — Red, dry, painful. Cool water + aloe.
 ⚠️ 2nd Degree — Blistered, wet, very painful. Keep blisters intact. Seek medical help.
 ⚠️ 3rd Degree — White/charred, no pain (nerve damage). EMERGENCY — seek help immediately.
 
 **Chemical Burns**
 1. Remove contaminated clothing.
 2. Flush with large amounts of water for 20+ minutes.
-⚠️ Do NOT neutralize chemical with another chemical.
-
-**Seek Emergency Help If**
-- Burns larger than palm of your hand
-- Burns on face, hands, feet
-- All 3rd degree burns`,
+⚠️ Do NOT neutralize chemical with another chemical.`,
   },
   {
     keywords: [
@@ -221,38 +266,35 @@ const knowledgeBase: KBEntry[] = [
       "paracetamol",
       "medicine fever",
       "high temp",
+      "crocin",
+      "dolo",
     ],
     title: "Fever Medicine Dosage",
     response: `**FEVER MEDICINE — DOSAGE BY AGE & GENDER**
 
-**Paracetamol (Crocin / Dolo / Tylenol)**
+**Paracetamol (Crocin / Dolo / Calpol)**
 
 **Children under 12 years**
-- Dose: 10–15 mg/kg body weight per dose
-- Frequency: Every 4–6 hours
+- <3 months: AVOID — doctor only
+- 3–12 months: 60–120mg (Crocin syrup 120mg/5ml) every 6 hours
+- 1–5 years: 120–250mg every 6 hours
+- 6–12 years: 250–500mg every 6 hours
 - Maximum: 4 doses per 24 hours
-- Example (20kg child): 200–300mg per dose
 
 **Adult Male (18–60 years)**
 - Dose: 500–1000mg per dose
-- Frequency: Every 4–6 hours
-- Maximum: 4g (4000mg) per 24 hours
+- Frequency: Every 4–6 hours. Maximum: 4g per 24 hours
 
 **Adult Female (18–60 years)**
-- Dose: 500–1000mg per dose
-- Frequency: Every 4–6 hours
-- Maximum: 3g (3000mg) per 24 hours
-⚠️ Pregnant: 500mg max; consult doctor
+- Dose: 500mg per dose. Frequency: Every 6 hours
+⚠️ Pregnant: 500mg only — safest option. No Ibuprofen.
 
 **Elderly (60+ years)**
-- Dose: 500mg per dose only
-- Frequency: Every 6 hours
-- Maximum: 2g (2000mg) per 24 hours
+- Dose: 500mg only. Frequency: Every 8 hours. Maximum: 2g per 24 hours
 
-⚠️ Never give aspirin to children under 16.
+⚠️ NEVER give Aspirin (Ecosprin) to children under 16.
 ⚠️ Avoid if liver disease is present.
-✅ Combine with cool damp cloth on forehead.
-✅ Ensure 2–3 litres water daily.`,
+✅ Combine with cool damp cloth on forehead. Drink 2–3 litres water daily.`,
   },
   {
     keywords: [
@@ -262,6 +304,8 @@ const knowledgeBase: KBEntry[] = [
       "pain",
       "ache",
       "muscle pain",
+      "brufen",
+      "volini",
     ],
     title: "Headache & Body Pain",
     response: `**HEADACHE & BODY PAIN — DOSAGE GUIDE**
@@ -269,23 +313,24 @@ const knowledgeBase: KBEntry[] = [
 **Ibuprofen (Brufen / Combiflam)**
 
 **Adult Male (18–60 years)**
-- Dose: 400mg every 6–8 hours
-- Always take WITH food or milk
-- Maximum: 1200mg per day
+- Dose: 400mg every 6–8 hours. Always take WITH food or milk.
 
 **Adult Female (18–60 years)**
 - Dose: 400mg every 6–8 hours with food
-⚠️ Avoid during pregnancy — use Paracetamol instead
+⚠️ AVOID during pregnancy — use Paracetamol instead
 
-**Children (6 months–12 years)**
-- Dose: 5–10 mg/kg per dose, every 6–8 hours with food
+**Children (3 months–12 years)**
+- 3–12 months: 50mg every 8 hours WITH food
+- 1–5 years: 100mg every 8 hours with food
+- 6–12 years: 200mg every 8 hours with food
 
 **Elderly (60+)**
-- Use Paracetamol preferably
-- If Ibuprofen needed: 200mg every 8 hours
+- Use Paracetamol preferably — if Ibuprofen needed: 200mg every 8 hours
 
-⚠️ Avoid Ibuprofen if: kidney disease, stomach ulcers, blood thinners, pregnancy
-✅ Safer for most people: Paracetamol (same dosage as fever guide).`,
+**Topical (local pain):**
+✅ Volini gel / Diclofenac gel — apply 3–4 times daily on affected area.
+
+⚠️ Avoid Ibuprofen if: kidney disease, stomach ulcers, pregnancy, dengue suspected`,
   },
   {
     keywords: [
@@ -310,11 +355,10 @@ const knowledgeBase: KBEntry[] = [
 **Medicines**
 - Dry cough: Dextromethorphan syrup (follow pack instructions)
 - Wet cough: Guaifenesin (expectorant) — loosens mucus
-- Blocked nose: Saline nasal drops, steam inhalation
+- Blocked nose: Saline nasal drops (Nasivion/Otrivin), steam inhalation
 
 **ORS (Oral Rehydration)**
 - Mix: 1 litre clean water + 6 tsp sugar + half tsp salt
-- Drink regularly — fever and coughing cause dehydration
 
 ⚠️ Seek Help Immediately If:
 ⚠️ Breathing difficulty or rapid breathing
@@ -336,14 +380,8 @@ const knowledgeBase: KBEntry[] = [
 **During a Flood**
 ✅ Stay above water level — upper floors or rooftop.
 ⚠️ Never walk through floodwater — 15cm can knock you down.
-⚠️ Driving in floodwater: 30cm can move a car — TURN BACK.
-⚠️ Stay away from drainage ditches and streams.
+⚠️ 30cm water can move a car — TURN BACK.
 ⚠️ Do not touch electrical equipment if wet.
-
-**What to Eat & Drink**
-✅ Only pre-packaged or previously sealed foods.
-✅ Purify all water before drinking.
-⚠️ Discard any food touched by floodwater.
 
 **Hideout Locations**
 ✅ Upper floors or roof (if structure is sound)
@@ -357,37 +395,25 @@ const knowledgeBase: KBEntry[] = [
 
 **During Shaking**
 1. DROP to hands and knees immediately.
-2. COVER under a sturdy table or desk. If none, protect head and neck with arms.
+2. COVER under a sturdy table or desk.
 3. HOLD ON until shaking completely stops.
 4. Stay away from windows, exterior walls, heavy furniture.
 ⚠️ Do NOT run outside during shaking.
-
-**If Outdoors**
-- Move away from buildings, trees, streetlights.
-- Once in open, drop and stay until shaking stops.
 
 **After Shaking Stops**
 1. Check yourself and others for injuries.
 2. Smell for gas — if present, open windows and evacuate.
 3. Expect aftershocks — they can be strong.
-4. Check structural damage before re-entering building.
 
 **Safe Hideout Locations**
 ✅ Open field away from buildings and power lines
 ✅ Under a sturdy table during shaking
-⚠️ Avoid tall buildings, bridges, old structures
-⚠️ Never use elevators after an earthquake`,
+⚠️ Avoid tall buildings, bridges, old structures`,
   },
   {
     keywords: ["cyclone", "typhoon", "hurricane", "storm", "gale"],
     title: "Cyclone Precautions",
     response: `**CYCLONE PRECAUTIONS & SURVIVAL**
-
-**Before the Cyclone**
-1. Board up windows with plywood.
-2. Secure or bring indoors all outdoor furniture.
-3. Stock 72 hours of food and purified water.
-4. Charge all devices and power banks.
 
 **During the Cyclone**
 ✅ Stay INDOORS throughout the storm.
@@ -398,8 +424,7 @@ const knowledgeBase: KBEntry[] = [
 **Safe Hideout Locations**
 ✅ Ground floor interior room (away from windows)
 ✅ Designated cyclone shelter buildings
-⚠️ Avoid mobile homes, caravans, light structures
-⚠️ Avoid upper floors (wind stress greatest there)`,
+⚠️ Avoid mobile homes, caravans, light structures`,
   },
   {
     keywords: ["landslide", "mudslide", "slope", "hill collapse", "mudflow"],
@@ -408,21 +433,17 @@ const knowledgeBase: KBEntry[] = [
 
 **Warning Signs**
 ⚠️ Cracks appearing in hillside soil
-⚠️ Sudden new spring or seep near slope
-⚠️ Tilting trees, fences, or walls
 ⚠️ Rumbling or cracking sounds from hillside
+⚠️ Tilting trees, fences, or walls
 ⚠️ Water turning muddy in streams suddenly
 
 **During a Landslide**
 1. Move QUICKLY away from the slide path.
 2. Move to the SIDE of the path — not up or down.
-3. If escape is impossible: curl into a tight ball, protect head.
-4. Avoid river valleys and low-lying areas near slopes.
 
 **Safe Hideout Locations**
 ✅ Opposite slope, away from the affected hillside
 ✅ Open flat ground away from valleys
-⚠️ Avoid river valleys and steep slopes
 ⚠️ Never shelter at the base of a cliff`,
   },
   {
@@ -437,26 +458,10 @@ const knowledgeBase: KBEntry[] = [
     title: "Hideout & Shelter Guide",
     response: `**HIDEOUT & SHELTER BY DISASTER TYPE**
 
-**Flood**
-✅ Upper floors of solid brick/concrete buildings
-✅ Rooftop or elevated platforms
-✅ Natural high ground (hills, ridges)
-⚠️ Avoid: Basements, ground floors, low-lying areas
-
-**Earthquake**
-✅ Open field or park, away from all structures
-✅ Inside: Sturdy table, interior doorframe
-⚠️ Avoid: Near windows, tall shelves, exterior walls, glass
-
-**Cyclone**
-✅ Interior room of a solid building (hallway, bathroom)
-✅ Ground floor of reinforced concrete structure
-⚠️ Avoid: Mobile homes, upper floors, coastal areas
-
-**Landslide**
-✅ Move to the OPPOSITE side of the slope
-✅ Open flat ground far from any hillside
-⚠️ Avoid: Valley bottoms, base of cliffs, areas below slopes`,
+**Flood** ✅ Upper floors of solid brick/concrete buildings ✅ Rooftop or elevated platforms ⚠️ Avoid: Basements, ground floors
+**Earthquake** ✅ Open field away from all structures ⚠️ Avoid: Near windows, tall shelves
+**Cyclone** ✅ Interior room of a solid building (hallway, bathroom) ⚠️ Avoid: Mobile homes, upper floors
+**Landslide** ✅ Move to OPPOSITE side of the slope ⚠️ Avoid: Valley bottoms, base of cliffs`,
   },
   {
     keywords: [
@@ -474,30 +479,19 @@ const knowledgeBase: KBEntry[] = [
 
 **Emergency Radio Frequencies (India)**
 - 156.8 MHz (Channel 16) — Marine/Coastal distress
-- 121.5 MHz — Aviation emergency (monitored by aircraft)
+- 121.5 MHz — Aviation emergency
 - 14.300 MHz — International ham radio emergency
 - AM 1000 kHz — All India Radio emergency broadcasts
 
 **How to Send a MAYDAY Call**
 1. Tune to Channel 16 (156.8 MHz).
-2. Press and hold transmit button. Say:
-   MAYDAY MAYDAY MAYDAY (three times)
-3. State your name and call sign.
-4. State your position (landmark, GPS, address).
-5. State the nature of emergency.
-6. State assistance needed.
-7. Release button and wait 10 seconds for response.
-8. Repeat every 5 minutes if no response.
+2. Press and hold transmit. Say: MAYDAY MAYDAY MAYDAY (three times).
+3. State your name, position, emergency, assistance needed.
+4. Release button and wait 10 seconds.
 
-**Morse Code SOS (Universal Distress)**
-- S = dot dot dot (3 short)
-- O = dash dash dash (3 long)
-- S = dot dot dot (3 short)
-✅ Flash torch: 3 short, 3 long, 3 short, pause, repeat.
-
-**Ground-to-Air Signals**
-- X = Need medical help
-- V = Need assistance`,
+**Morse Code SOS**
+✅ S = dot dot dot · O = dash dash dash · S = dot dot dot
+✅ Flash torch: 3 short, 3 long, 3 short, pause, repeat.`,
   },
   {
     keywords: [
@@ -512,17 +506,10 @@ const knowledgeBase: KBEntry[] = [
     title: "Electricity Generation",
     response: `**EMERGENCY ELECTRICITY GENERATION**
 
-**Solar Panel Setup — Steps**
+**Solar Panel Setup**
 1. Position panel facing south (India) at 15–20 degree angle.
-2. Connect panel to a charge controller (prevents overcharge).
-3. Connect charge controller to a 12V battery.
-4. Connect USB/DC inverter to battery for device charging.
-5. Typical output: 10W panel = approx 50Wh/day in good sun.
-
-**Portable Solar Chargers**
-✅ 5W–20W foldable panels charge phones/tablets directly via USB.
-✅ Works in 3–4 hours of direct sun.
-✅ Ideal for Raspberry Pi, radios, LED lighting.
+2. Connect panel to charge controller.
+3. Connect to 12V battery, then USB/DC inverter for devices.
 
 **Power Bank Priority Order**
 1. Emergency radio (communications first)
@@ -530,15 +517,8 @@ const knowledgeBase: KBEntry[] = [
 3. Torch/LED lighting
 4. Medical devices (glucose meters, hearing aids)
 
-**Hand-Crank Generator**
-1. Extend crank handle fully.
-2. Crank at steady 60–80 rpm.
-3. 1 minute cranking = approx 3–5 minutes phone call charge.
-
-**Conservation Tips**
-✅ Airplane mode reduces power consumption by approx 50%
-✅ Minimum screen brightness extends battery 2x
-✅ Disable WiFi/Bluetooth when not in use`,
+✅ Airplane mode reduces power consumption by ~50%
+✅ Minimum screen brightness extends battery 2x`,
   },
   {
     keywords: [
@@ -551,24 +531,18 @@ const knowledgeBase: KBEntry[] = [
     title: "Evacuation Signs",
     response: `**SIGNS YOU MUST EVACUATE IMMEDIATELY**
 
-⚠️ 1. Rising Water — Floodwater entering ground floor or rising fast.
-⚠️ 2. Gas Leak / Smell — Do NOT use switches or flames. Walk out immediately.
+⚠️ 1. Rising Water — Floodwater entering ground floor.
+⚠️ 2. Gas Leak / Smell — Walk out immediately. Do not use switches.
 ⚠️ 3. Structural Damage — Cracks spreading rapidly in walls or floors.
-⚠️ 4. Landslide Rumble — Rumbling or cracking sounds from nearby hillside.
+⚠️ 4. Landslide Rumble — Rumbling from nearby hillside.
 ⚠️ 5. Official Order — Any official evacuation order must be obeyed immediately.
 
-**What to Take (60-Second Evacuation Bag)**
-✅ Identity documents (Aadhar, passport) in waterproof pouch
-✅ Cash — ATMs may not work
+**60-Second Evacuation Bag**
+✅ Aadhar/identity documents in waterproof pouch
+✅ Cash (ATMs may not work)
 ✅ Charged mobile phone + power bank
 ✅ 1 litre water per person
-✅ Essential medicines (3-day supply)
-✅ Torch with spare batteries
-
-**Evacuation Rules**
-- Never re-enter until officially cleared.
-- Tell a contact person where you are going.
-- Follow designated evacuation routes.`,
+✅ Essential medicines (3-day supply)`,
   },
   {
     keywords: [
@@ -582,28 +556,10 @@ const knowledgeBase: KBEntry[] = [
     title: "Clothing Guide for Disasters",
     response: `**CLOTHING GUIDE — WHAT TO WEAR BY DISASTER**
 
-**Flood**
-✅ Rubber/waterproof boots (knee height)
-✅ Light, quick-dry synthetic clothing
-✅ Bright colored jacket (visibility for rescue)
-⚠️ Avoid: Cotton jeans (heavy when wet, cause hypothermia)
-⚠️ Avoid: Flip flops/sandals (dangerous in debris-filled water)
-
-**Earthquake**
-✅ Closed-toe sturdy shoes (glass, debris on ground)
-✅ Helmet or hard hat if available
-✅ Long sleeves and pants (protection from rubble)
-⚠️ Avoid: Loose flowing clothing near rubble (snagging risk)
-
-**Cyclone**
-✅ Stay indoors — no outdoor clothing needed
-✅ If must go out: waterproof jacket, eye protection
-⚠️ Avoid: Umbrellas (become projectiles in high wind)
-
-**Landslide / Mudslide**
-✅ Rubber boots
-✅ Old clothing you can discard (mud is contaminated)
-✅ Face mask or cloth over nose/mouth`,
+**Flood** ✅ Rubber waterproof boots ✅ Light quick-dry synthetic clothing ✅ Bright colored jacket (visibility) ⚠️ Avoid: Cotton jeans (heavy when wet)
+**Earthquake** ✅ Closed-toe sturdy shoes ✅ Helmet if available ✅ Long sleeves and pants
+**Cyclone** ✅ Stay indoors ✅ If must go out: waterproof jacket, eye protection ⚠️ Avoid: Umbrellas (become projectiles)
+**Landslide** ✅ Rubber boots ✅ Old clothing you can discard ✅ Face mask over nose/mouth`,
   },
   {
     keywords: [
@@ -620,39 +576,18 @@ const knowledgeBase: KBEntry[] = [
     response: `**72-HOUR EMERGENCY DISASTER KIT**
 
 **Water & Food**
-✅ 4 litres water per person (3-day supply)
-✅ Water purification tablets
-✅ Non-perishable foods: puffed rice, biscuits, dry fruits, canned food
-✅ Manual can opener
+✅ 4 litres water per person ✅ Water purification tablets ✅ Non-perishable foods: puffed rice, biscuits, dry fruits, canned food
 
 **Medical**
-✅ Paracetamol (fever & pain)
-✅ ORS sachets (rehydration)
-✅ Bandages, gauze, antiseptic (Betadine)
-✅ Gloves (10 pairs) + Thermometer
-✅ Prescription medications (7-day supply)
+✅ Paracetamol (Crocin/Dolo) ✅ ORS sachets ✅ Betadine + Neosporin/Soframycin ointment ✅ Bandages, gauze ✅ Gloves + Thermometer ✅ Prescription medications (7-day supply)
 
 **Tools & Lighting**
-✅ Torch + extra batteries (or hand-crank)
-✅ Whistle (to signal for help)
-✅ Multi-tool or pocket knife
-✅ Waterproof matches + lighter
-✅ Rope (10 metres)
+✅ Torch + extra batteries ✅ Whistle ✅ Multi-tool ✅ Waterproof matches + lighter ✅ Rope (10 metres)
 
-**Communication**
-✅ Battery/solar/crank radio
-✅ Fully charged power bank
-✅ Written list of emergency contacts + Local map (printed)
-
-**Documents**
-✅ Aadhar card copies + Insurance documents
-✅ Cash (2000–5000 rupees in small notes)
-
-**Extras**
-✅ Warm blanket or emergency foil blanket
-✅ Rain poncho or plastic sheets
-✅ Dust masks (N95 if available)`,
+**Communication & Documents**
+✅ Battery/solar radio ✅ Fully charged power bank ✅ Aadhar card copies ✅ Cash (2000–5000 rupees in small notes)`,
   },
+  ...MEDICAL_KB_ENTRIES,
 ];
 
 const QUICK_CHIPS = [
@@ -660,11 +595,15 @@ const QUICK_CHIPS = [
   "CPR steps",
   "Flood precautions",
   "Treat a wound",
-  "Food safety",
   "Fever medicine dosage",
-  "Earthquake hideout",
-  "Radio signals",
-  "Solar electricity",
+  "Snakebite India protocol",
+  "Heatstroke Vijayawada",
+  "Child medicine dosage",
+  "Pregnancy emergency",
+  "Asthma attack",
+  "Diabetic emergency",
+  "Fracture first aid",
+  "Elderly care disaster",
   "What to pack in kit",
 ];
 
@@ -673,16 +612,19 @@ const INITIAL_MESSAGE: Message = {
   role: "ai",
   text: `**WELCOME TO LOCAL-EYES AI ASSISTANT**
 
-I am your disaster survival guide. Ask me anything about:
+I am your disaster survival guide for India and Andhra Pradesh. Ask me anything about:
 
-✅ First Aid — CPR, wounds, burns, fever, pain medicine
-✅ Survival — water purification, food safety, shelter
+✅ First Aid — CPR, wounds, burns, fractures, severe bleeding
+✅ Medical — snakebite, heatstroke, asthma, diabetes, anaphylaxis
+✅ Pregnancy — emergency delivery, eclampsia, postpartum
+✅ Pediatric — child medicine dosages, infant CPR, choking
+✅ Elderly — falls, medication risks, heat vulnerability
 ✅ Disasters — flood, earthquake, cyclone, landslide
-✅ Equipment — radio, solar power, emergency kit
+✅ Survival — water purification, food safety, radio signals
 
 Select a quick topic below or type your question.
 
-💡 Tip: Toggle 'Online' in the header for live AI answers (requires Gemini API key + internet).`,
+💡 Toggle 'Online' in the header for live Gemini AI answers (requires API key + internet).`,
 };
 
 function getBotResponse(query: string): string {
@@ -839,9 +781,11 @@ function scrollToBottom(ref: React.RefObject<HTMLDivElement | null>) {
 }
 
 const GEMINI_SYSTEM_INSTRUCTION =
-  "You are Local-Eyes AI, a disaster survival expert for India and Andhra Pradesh. Give detailed, step-by-step, actionable answers about: water purification, food safety, first aid (CPR, wounds, burns, fever, dosages), disaster survival (floods, earthquakes, cyclones, landslides), emergency kit packing, radio signals, electricity generation, shelter/hideout, clothing for disasters, evacuation. Always be specific, practical, and clear. Format with numbered steps when giving procedures. Use ✅ for safe actions and ⚠️ for warnings. Keep context of India/Andhra Pradesh in mind. Be concise but complete.";
+  "You are Local-Eyes AI, a disaster survival and medical expert for India and Andhra Pradesh. Give detailed, step-by-step, actionable answers about: water purification, food safety, first aid (CPR, wounds, burns, fractures, severe bleeding, snakebite, heatstroke, drowning, electrocution), medical emergencies (asthma, anaphylaxis, diabetic emergencies, dental emergencies), pregnancy and obstetric emergencies (labour, emergency delivery, eclampsia, postpartum hemorrhage), pediatric emergencies (child medicine dosages, infant CPR, choking, febrile seizures), elderly care (falls, hip fracture, medication risks, heat vulnerability), disaster survival (floods, earthquakes, cyclones, landslides), emergency kit packing, radio signals, electricity generation, shelter/hideout. Always mention India-specific medicines available at Indian pharmacies/chemists (Paracetamol=Crocin/Dolo, Ibuprofen=Brufen/Combiflam, Salbutamol=Asthalin, Cetirizine=Alerid). Reference AP/Vijayawada context when relevant. NEVER give Aspirin to children. NEVER give NSAIDs to pregnant women. Format with numbered steps. Use ✅ for safe actions and ⚠️ for warnings. Be concise but complete.";
 
 export function AIAssistant() {
+  const { lang: appLang } = useLanguage();
+
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
@@ -851,6 +795,9 @@ export function AIAssistant() {
     return localStorage.getItem("localeyes_gemini_key") ?? "";
   });
   const [awaitingApiKey, setAwaitingApiKey] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -932,7 +879,13 @@ export function AIAssistant() {
               system_instruction: {
                 parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }],
               },
-              contents: [{ parts: [{ text: txt }] }],
+              contents: [
+                ...messages.slice(-10).map((m) => ({
+                  role: m.role === "user" ? "user" : "model",
+                  parts: [{ text: m.text }],
+                })),
+                { role: "user", parts: [{ text: txt }] },
+              ],
             }),
           },
         );
@@ -969,11 +922,91 @@ export function AIAssistant() {
     );
   }
 
+  // Cleanup recognition on unmount
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, []);
+
+  function stopListening() {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setIsListening(false);
+  }
+
+  function handleMicClick() {
+    setMicError(null);
+
+    if (isListening) {
+      stopListening();
+      return;
+    }
+
+    if (!isSpeechSupported) return;
+
+    const SpeechRecognitionCtor =
+      window.SpeechRecognition ?? window.webkitSpeechRecognition;
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = speechLangMap[appLang] ?? "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0]?.[0]?.transcript ?? "";
+      if (transcript) {
+        setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      }
+      setIsListening(false);
+      recognitionRef.current = null;
+      inputRef.current?.focus();
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      setIsListening(false);
+      recognitionRef.current = null;
+      if (
+        event.error === "not-allowed" ||
+        event.error === "permission-denied"
+      ) {
+        setMicError(
+          "Microphone access denied. Please allow microphone permission in your browser settings and try again.",
+        );
+      } else if (event.error === "no-speech") {
+        setMicError("No speech detected. Please try speaking again.");
+      } else {
+        setMicError("Speech recognition error. Please try again.");
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      if (recognitionRef.current === recognition) {
+        recognitionRef.current = null;
+      }
+    };
+
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      recognitionRef.current = null;
+      setMicError("Could not start microphone. Please try again.");
+    }
+  }
+
   function reset() {
     setMessages([INITIAL_MESSAGE]);
     setInput("");
     setLoading(false);
     setAwaitingApiKey(false);
+    stopListening();
+    setMicError(null);
   }
 
   const isOnlineActive = internetMode && !awaitingApiKey && !!geminiApiKey;
@@ -1275,45 +1308,142 @@ export function AIAssistant() {
 
               {/* Input */}
               <div
-                className="flex gap-2 p-4 flex-shrink-0"
+                className="flex flex-col gap-1.5 p-4 flex-shrink-0"
                 style={{ borderTop: "1px solid oklch(0.27 0.007 95)" }}
               >
-                <Input
-                  ref={inputRef}
-                  placeholder={
-                    awaitingApiKey
-                      ? "Paste your Gemini API key (AIza...)"
-                      : isOnlineActive
-                        ? "Ask Gemini AI anything..."
-                        : "Ask anything — water, CPR, floods..."
-                  }
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && send()}
-                  className="flex-1 text-sm"
-                  type={awaitingApiKey ? "password" : "text"}
-                  style={{
-                    background: "oklch(0.21 0.007 95)",
-                    borderColor: awaitingApiKey
-                      ? "oklch(0.82 0.15 85 / 0.5)"
-                      : "oklch(0.31 0.007 95)",
-                    color: "oklch(0.92 0.01 95)",
-                  }}
-                  data-ocid="ai.input"
-                />
-                <Button
-                  size="icon"
-                  className="flex-shrink-0 rounded-xl"
-                  style={{
-                    background: "oklch(0.82 0.15 85)",
-                    color: "oklch(0.13 0.007 95)",
-                  }}
-                  onClick={() => send()}
-                  disabled={loading || !input.trim()}
-                  data-ocid="ai.submit_button"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+                {/* Mic error message */}
+                {micError && (
+                  <div
+                    className="text-xs px-3 py-2 rounded-lg"
+                    style={{
+                      background: "oklch(0.65 0.16 27 / 0.12)",
+                      border: "1px solid oklch(0.65 0.16 27 / 0.3)",
+                      color: "oklch(0.75 0.16 45)",
+                    }}
+                    data-ocid="ai.error_state"
+                  >
+                    {micError}
+                  </div>
+                )}
+
+                {/* Listening indicator */}
+                {isListening && (
+                  <motion.div
+                    className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      background: "oklch(0.65 0.16 27 / 0.1)",
+                      border: "1px solid oklch(0.65 0.16 27 / 0.25)",
+                      color: "oklch(0.75 0.16 27)",
+                    }}
+                    data-ocid="ai.loading_state"
+                  >
+                    <motion.span
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ background: "oklch(0.65 0.2 27)" }}
+                      animate={{ opacity: [1, 0.2, 1], scale: [1, 1.4, 1] }}
+                      transition={{
+                        duration: 1.2,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: "easeInOut",
+                      }}
+                    />
+                    Listening... Speak now
+                  </motion.div>
+                )}
+
+                <div className="flex gap-2">
+                  <Input
+                    ref={inputRef}
+                    placeholder={
+                      awaitingApiKey
+                        ? "Paste your Gemini API key (AIza...)"
+                        : isOnlineActive
+                          ? "Ask Gemini AI anything..."
+                          : "Ask anything — water, CPR, floods..."
+                    }
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && send()}
+                    className="flex-1 text-sm"
+                    type={awaitingApiKey ? "password" : "text"}
+                    style={{
+                      background: "oklch(0.21 0.007 95)",
+                      borderColor: awaitingApiKey
+                        ? "oklch(0.82 0.15 85 / 0.5)"
+                        : isListening
+                          ? "oklch(0.65 0.2 27 / 0.6)"
+                          : "oklch(0.31 0.007 95)",
+                      color: "oklch(0.92 0.01 95)",
+                    }}
+                    data-ocid="ai.input"
+                  />
+
+                  {/* Microphone button — hidden if Speech API not supported */}
+                  {isSpeechSupported && !awaitingApiKey && (
+                    <motion.button
+                      type="button"
+                      onClick={handleMicClick}
+                      className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center relative"
+                      style={{
+                        background: isListening
+                          ? "oklch(0.65 0.2 27 / 0.2)"
+                          : "oklch(0.24 0.007 95)",
+                        border: isListening
+                          ? "1px solid oklch(0.65 0.2 27 / 0.5)"
+                          : "1px solid oklch(0.34 0.007 95)",
+                        color: isListening
+                          ? "oklch(0.75 0.2 27)"
+                          : "oklch(0.65 0.01 95)",
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.92 }}
+                      title={isListening ? "Stop recording" : "Voice input"}
+                      aria-label={
+                        isListening ? "Stop recording" : "Start voice input"
+                      }
+                      data-ocid="ai.toggle"
+                    >
+                      {isListening ? (
+                        <MicOff className="w-4 h-4" />
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                      {isListening && (
+                        <motion.span
+                          className="absolute inset-0 rounded-xl"
+                          style={{
+                            border: "2px solid oklch(0.65 0.2 27 / 0.6)",
+                          }}
+                          animate={{
+                            opacity: [0.8, 0, 0.8],
+                            scale: [1, 1.25, 1],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                        />
+                      )}
+                    </motion.button>
+                  )}
+
+                  <Button
+                    size="icon"
+                    className="flex-shrink-0 rounded-xl"
+                    style={{
+                      background: "oklch(0.82 0.15 85)",
+                      color: "oklch(0.13 0.007 95)",
+                    }}
+                    onClick={() => send()}
+                    disabled={loading || !input.trim()}
+                    data-ocid="ai.submit_button"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </>

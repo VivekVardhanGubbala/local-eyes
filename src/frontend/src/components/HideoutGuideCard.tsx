@@ -1,6 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, Home, XCircle } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type HideoutData = {
   emoji: string;
@@ -106,17 +107,26 @@ const disasters: HideoutData[] = [
 ];
 
 export function HideoutGuideCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="hideout-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <Home className="w-4 h-4" style={{ color: "oklch(0.65 0.18 145)" }} />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Hideout Guide
-          </span>
+          <Home
+            className="w-4 h-4"
+            style={{ color: "oklch(0.65 0.18 145)" }}
+            aria-hidden="true"
+          />
+          <h2
+            id="hideout-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("hideout.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -126,7 +136,7 @@ export function HideoutGuideCard() {
             border: "1px solid oklch(0.65 0.18 145 / 0.3)",
           }}
         >
-          4 Disasters
+          {t("hideout.badge")}
         </span>
       </div>
 
@@ -166,7 +176,7 @@ export function HideoutGuideCard() {
                     className="text-xs font-bold uppercase tracking-wide mb-1.5"
                     style={{ color: "oklch(0.65 0.18 145)" }}
                   >
-                    ✓ Safe Hideout Locations
+                    {t("hideout.safe")}
                   </p>
                   <ul className="space-y-1">
                     {d.locations.map((loc) => (
@@ -174,6 +184,7 @@ export function HideoutGuideCard() {
                         <CheckCircle2
                           className="w-3.5 h-3.5 shrink-0 mt-0.5"
                           style={{ color: "oklch(0.65 0.18 145)" }}
+                          aria-hidden="true"
                         />
                         <span style={{ color: "oklch(0.74 0.015 80)" }}>
                           {loc}
@@ -187,7 +198,7 @@ export function HideoutGuideCard() {
                     className="text-xs font-bold uppercase tracking-wide mb-1.5"
                     style={{ color: "oklch(0.65 0.2 25)" }}
                   >
-                    ✗ Avoid These Actions
+                    {t("hideout.avoid_acts")}
                   </p>
                   <ul className="space-y-1">
                     {d.avoidActs.map((a) => (
@@ -195,6 +206,7 @@ export function HideoutGuideCard() {
                         <XCircle
                           className="w-3.5 h-3.5 shrink-0 mt-0.5"
                           style={{ color: "oklch(0.65 0.2 25)" }}
+                          aria-hidden="true"
                         />
                         <span style={{ color: "oklch(0.74 0.015 80)" }}>
                           {a}
@@ -208,7 +220,7 @@ export function HideoutGuideCard() {
                     className="text-xs font-bold uppercase tracking-wide mb-1.5"
                     style={{ color: "oklch(0.60 0.14 40)" }}
                   >
-                    ⚠ Avoid Carrying
+                    {t("hideout.avoid_carry")}
                   </p>
                   <ul className="space-y-1">
                     {d.avoidCarry.map((c) => (
@@ -216,6 +228,7 @@ export function HideoutGuideCard() {
                         <XCircle
                           className="w-3.5 h-3.5 shrink-0 mt-0.5"
                           style={{ color: "oklch(0.60 0.14 40)" }}
+                          aria-hidden="true"
                         />
                         <span style={{ color: "oklch(0.74 0.015 80)" }}>
                           {c}
@@ -229,6 +242,6 @@ export function HideoutGuideCard() {
           </TabsContent>
         ))}
       </Tabs>
-    </div>
+    </section>
   );
 }

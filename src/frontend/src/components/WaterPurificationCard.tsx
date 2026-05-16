@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertTriangle, Droplets } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const methods = [
   {
@@ -62,20 +63,26 @@ const methods = [
 ];
 
 export function WaterPurificationCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="water-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">
           <Droplets
             className="w-4 h-4"
             style={{ color: "oklch(0.60 0.14 195)" }}
+            aria-hidden="true"
           />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Water Purification
-          </span>
+          <h2
+            id="water-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("water.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -85,7 +92,7 @@ export function WaterPurificationCard() {
             border: "1px solid oklch(0.60 0.14 195 / 0.3)",
           }}
         >
-          Step-by-Step
+          {t("water.badge")}
         </span>
       </div>
 
@@ -100,10 +107,10 @@ export function WaterPurificationCard() {
           <AlertTriangle
             className="w-3.5 h-3.5 shrink-0 mt-0.5"
             style={{ color: "oklch(0.65 0.2 25)" }}
+            aria-hidden="true"
           />
           <p className="text-xs" style={{ color: "oklch(0.65 0.2 25)" }}>
-            <strong>Never drink floodwater directly.</strong> Floodwater
-            contains sewage, chemicals, and disease-causing organisms.
+            {t("water.warning")}
           </p>
         </div>
       </div>
@@ -111,10 +118,11 @@ export function WaterPurificationCard() {
       <ScrollArea className="h-60 px-4">
         <div className="space-y-3 pb-4 pr-2">
           {methods.map((m) => (
-            <div
+            <article
               key={m.num}
               className="rounded-lg p-3"
               style={{ background: "oklch(0.15 0.007 95)" }}
+              aria-label={`Method ${m.num}: ${m.title}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -127,12 +135,12 @@ export function WaterPurificationCard() {
                   >
                     {m.num}
                   </span>
-                  <p
+                  <h3
                     className="text-xs font-bold uppercase tracking-wide"
                     style={{ color: m.color }}
                   >
                     {m.title}
-                  </p>
+                  </h3>
                 </div>
                 <span
                   className="text-xs px-2 py-0.5 rounded-full"
@@ -144,12 +152,13 @@ export function WaterPurificationCard() {
                   {m.time}
                 </span>
               </div>
-              <ol className="space-y-1">
+              <ol className="space-y-1" aria-label={`${m.title} steps`}>
                 {m.steps.map((step) => (
                   <li key={step} className="flex gap-2 text-xs">
                     <span
                       className="shrink-0 font-bold"
                       style={{ color: m.color }}
+                      aria-hidden="true"
                     >
                       ›
                     </span>
@@ -165,10 +174,10 @@ export function WaterPurificationCard() {
                   </li>
                 ))}
               </ol>
-            </div>
+            </article>
           ))}
         </div>
       </ScrollArea>
-    </div>
+    </section>
   );
 }

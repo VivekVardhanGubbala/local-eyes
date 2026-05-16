@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Phone } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type ContactCategory = "police" | "medical" | "disaster" | "women" | "utility";
 
@@ -41,7 +42,7 @@ const categoryColors: Record<
   },
 };
 
-const categoryLabels: Record<ContactCategory, string> = {
+const _categoryLabels: Record<ContactCategory, string> = {
   police: "Police / Fire",
   medical: "Medical",
   disaster: "Disaster / Relief",
@@ -200,7 +201,7 @@ const groupedContacts: Record<ContactCategory, Contact[]> = {
 function ContactTile({ contact, index }: { contact: Contact; index: number }) {
   const colors = categoryColors[contact.category];
   return (
-    <div
+    <article
       className="rounded-xl p-3 flex flex-col gap-1.5 relative overflow-hidden"
       style={{
         background: "oklch(0.19 0.007 95)",
@@ -208,22 +209,28 @@ function ContactTile({ contact, index }: { contact: Contact; index: number }) {
         borderLeft: `3px solid ${colors.border}`,
       }}
       data-ocid={`emergency.item.${index + 1}`}
+      aria-label={`${contact.name}: ${contact.purpose}`}
     >
       <div className="flex items-start justify-between gap-2">
         <span
           className="font-display font-extrabold text-xl leading-none tracking-tight"
           style={{ color: "oklch(0.82 0.15 85)" }}
+          aria-hidden="true"
         >
           {contact.number}
         </span>
         <a
           href={`tel:${contact.number.replace(/[^0-9+]/g, "")}`}
-          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-80 active:scale-95"
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-80 active:scale-95 focus:ring-2 focus:ring-cyan-400 focus:outline-none"
           style={{ background: colors.badge }}
-          aria-label={`Call ${contact.name}`}
+          aria-label={`Call ${contact.name} at ${contact.number}`}
           data-ocid={`emergency.button.${index + 1}`}
         >
-          <Phone className="w-3.5 h-3.5" style={{ color: colors.text }} />
+          <Phone
+            className="w-3.5 h-3.5"
+            style={{ color: colors.text }}
+            aria-hidden="true"
+          />
         </a>
       </div>
       <p className="text-sm font-bold text-foreground leading-snug">
@@ -235,17 +242,26 @@ function ContactTile({ contact, index }: { contact: Contact; index: number }) {
       >
         {contact.purpose}
       </p>
-    </div>
+    </article>
   );
 }
 
 export function EmergencyContactsCard() {
+  const { t } = useLanguage();
+  const categoryLabels: Record<ContactCategory, string> = {
+    police: t("emergency.cat_police"),
+    medical: t("emergency.cat_medical"),
+    disaster: t("emergency.cat_disaster"),
+    women: t("emergency.cat_women"),
+    utility: t("emergency.cat_utility"),
+  };
   let globalIndex = 0;
 
   return (
-    <div
+    <section
       className="rounded-2xl border border-border flex flex-col overflow-hidden"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="emergency-contacts-heading"
     >
       {/* Header */}
       <div
@@ -262,11 +278,14 @@ export function EmergencyContactsCard() {
           />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-display font-extrabold uppercase tracking-tight text-base text-foreground">
-            Emergency Contacts
-          </h3>
+          <h2
+            id="emergency-contacts-heading"
+            className="font-display font-extrabold uppercase tracking-tight text-base text-foreground"
+          >
+            {t("emergency.title")}
+          </h2>
           <p className="text-xs" style={{ color: "oklch(0.60 0.006 95)" }}>
-            Tap to call · India national &amp; Andhra Pradesh
+            {t("emergency.subtitle")}
           </p>
         </div>
         <span
@@ -277,17 +296,22 @@ export function EmergencyContactsCard() {
             color: "oklch(0.70 0.14 30)",
           }}
         >
-          {contacts.length} numbers
+          {contacts.length} {t("emergency.numbers")}
         </span>
       </div>
 
       {/* Category legend */}
-      <div className="flex flex-wrap gap-2 px-4 py-3 border-b border-border">
+      <ul
+        className="flex flex-wrap gap-2 px-4 py-3 border-b border-border list-none m-0 p-0"
+        style={{ padding: "12px 16px" }}
+        aria-label="Contact categories"
+      >
         {(Object.keys(categoryColors) as ContactCategory[]).map((cat) => (
-          <div key={cat} className="flex items-center gap-1.5">
+          <li key={cat} className="flex items-center gap-1.5">
             <span
               className="w-2.5 h-2.5 rounded-sm"
               style={{ background: categoryColors[cat].border }}
+              aria-hidden="true"
             />
             <span
               className="text-xs font-medium"
@@ -295,9 +319,9 @@ export function EmergencyContactsCard() {
             >
               {categoryLabels[cat]}
             </span>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
 
       {/* Contacts */}
       <ScrollArea className="flex-1 max-h-[600px]">
@@ -308,6 +332,7 @@ export function EmergencyContactsCard() {
                 <span
                   className="w-2.5 h-2.5 rounded-sm shrink-0"
                   style={{ background: categoryColors[cat].border }}
+                  aria-hidden="true"
                 />
                 <span
                   className="text-xs font-display font-bold uppercase tracking-widest"
@@ -320,7 +345,10 @@ export function EmergencyContactsCard() {
                   style={{ background: "oklch(0.25 0.007 95)" }}
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <ul
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 list-none m-0 p-0"
+                aria-label={`${categoryLabels[cat]} contacts`}
+              >
                 {groupedContacts[cat].map((contact) => {
                   const idx = globalIndex++;
                   return (
@@ -331,11 +359,11 @@ export function EmergencyContactsCard() {
                     />
                   );
                 })}
-              </div>
+              </ul>
             </div>
           ))}
         </div>
       </ScrollArea>
-    </div>
+    </section>
   );
 }

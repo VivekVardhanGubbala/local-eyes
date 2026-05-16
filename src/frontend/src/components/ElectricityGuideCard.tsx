@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Battery, Radio, Smartphone, Sun, Wind, Zap } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const sections = [
   {
@@ -74,17 +75,26 @@ const priority = [
 ];
 
 export function ElectricityGuideCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="electricity-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4" style={{ color: "oklch(0.82 0.15 85)" }} />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Power & Electricity
-          </span>
+          <Zap
+            className="w-4 h-4"
+            style={{ color: "oklch(0.82 0.15 85)" }}
+            aria-hidden="true"
+          />
+          <h2
+            id="electricity-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("electricity.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -94,28 +104,29 @@ export function ElectricityGuideCard() {
             border: "1px solid oklch(0.82 0.15 85 / 0.3)",
           }}
         >
-          Survival
+          {t("electricity.badge")}
         </span>
       </div>
 
       <ScrollArea className="h-64 px-4">
         <div className="space-y-3 pb-4 pr-2">
           {sections.map((sec) => (
-            <div
+            <article
               key={sec.title}
               className="rounded-lg p-3"
               style={{ background: "oklch(0.15 0.007 95)" }}
+              aria-label={sec.title}
             >
               <div
                 className="flex items-center gap-2 mb-2"
                 style={{ color: sec.color }}
               >
-                {sec.icon}
-                <p className="text-xs font-bold uppercase tracking-wide">
+                <span aria-hidden="true">{sec.icon}</span>
+                <h3 className="text-xs font-bold uppercase tracking-wide">
                   {sec.title}
-                </p>
+                </h3>
               </div>
-              <ul className="space-y-1">
+              <ul className="space-y-1" aria-label={`${sec.title} tips`}>
                 {sec.items.map((item) => (
                   <li
                     key={item}
@@ -125,6 +136,7 @@ export function ElectricityGuideCard() {
                     <span
                       className="shrink-0 mt-0.5"
                       style={{ color: sec.color }}
+                      aria-hidden="true"
                     >
                       ›
                     </span>
@@ -132,7 +144,7 @@ export function ElectricityGuideCard() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </article>
           ))}
 
           <div
@@ -146,7 +158,7 @@ export function ElectricityGuideCard() {
               className="text-xs font-bold uppercase tracking-wide mb-2"
               style={{ color: "oklch(0.82 0.15 85)" }}
             >
-              Charge Priority Order
+              {t("electricity.priority")}
             </p>
             <div className="space-y-1.5">
               {priority.map((p) => (
@@ -182,6 +194,6 @@ export function ElectricityGuideCard() {
           </div>
         </div>
       </ScrollArea>
-    </div>
+    </section>
   );
 }

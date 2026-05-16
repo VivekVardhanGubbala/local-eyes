@@ -114,19 +114,24 @@ export function VijayawadaMapCard() {
   const [zoom, setZoom] = useState(0);
 
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="vja-map-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">
           <MapPin
             className="w-4 h-4"
             style={{ color: "oklch(0.82 0.15 85)" }}
+            aria-hidden="true"
           />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
+          <h2
+            id="vja-map-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
             Vijayawada — City Map
-          </span>
+          </h2>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -166,12 +171,13 @@ export function VijayawadaMapCard() {
               onClick={() =>
                 setZoom((z) => Math.min(z + 1, VIEWBOXES.length - 1))
               }
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               style={{
                 background: "oklch(0.25 0.007 95)",
                 border: "1px solid oklch(0.35 0.007 95)",
                 color: "oklch(0.82 0.01 95)",
               }}
+              aria-label="Zoom in on map"
               title="Zoom in"
               data-ocid="map.primary_button"
             >
@@ -180,12 +186,13 @@ export function VijayawadaMapCard() {
             <button
               type="button"
               onClick={() => setZoom((z) => Math.max(z - 1, 0))}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               style={{
                 background: "oklch(0.25 0.007 95)",
                 border: "1px solid oklch(0.35 0.007 95)",
                 color: "oklch(0.82 0.01 95)",
               }}
+              aria-label="Zoom out on map"
               title="Zoom out"
               data-ocid="map.secondary_button"
             >
@@ -197,10 +204,15 @@ export function VijayawadaMapCard() {
             viewBox={VIEWBOXES[zoom]}
             className="w-full"
             role="img"
-            aria-label="Vijayawada city map"
+            aria-labelledby="vja-map-svg-title vja-map-svg-desc"
             style={{ maxHeight: "520px" }}
           >
-            <title>Vijayawada City Offline Map</title>
+            <title id="vja-map-svg-title">Vijayawada City Offline Map</title>
+            <desc id="vja-map-svg-desc">
+              City map of Vijayawada showing major areas, Krishna River,
+              flood-prone zones, 3 hospitals, 4 evacuation routes, and Prakasam
+              Barrage
+            </desc>
 
             {[80, 140, 200, 260, 320, 380, 440, 500].map((x) => (
               <line
@@ -643,7 +655,21 @@ export function VijayawadaMapCard() {
             🗺 Andhra Pradesh, India — Fully Offline
           </span>
         </div>
+        {/* Screen-reader accessible location list */}
+        <ul className="sr-only" aria-label="Locations on Vijayawada map">
+          {hospitals.map((h) => (
+            <li key={h.name}>Hospital: {h.name}</li>
+          ))}
+          {areas.map((a) => (
+            <li key={a.name}>
+              {a.industrial ? "Industrial Area" : "Area"}: {a.name}
+            </li>
+          ))}
+          <li>Krishna River and Prakasam Barrage</li>
+          <li>Flood-Prone Zone near riverbank</li>
+          <li>4 evacuation routes marked with arrows</li>
+        </ul>
       </div>
-    </div>
+    </section>
   );
 }

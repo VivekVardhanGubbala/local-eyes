@@ -1,0 +1,127 @@
+type TriageStatus = 
+ variant {
+   deceased;
+   delayed;
+   immediate;
+   minor;
+ };
+type TriageRecord = 
+ record {
+   notes: text;
+   patientId: text;
+   status: TriageStatus;
+   symptoms: vec text;
+   timestamp: Time;
+ };
+type Time = int;
+type SurvivalTopic = 
+ record {
+   category: SurvivalCategory;
+   content: text;
+   tags: vec text;
+   title: text;
+ };
+type SurvivalCategory = 
+ variant {
+   carAccident;
+   chemicalSpill;
+   cyclone;
+   drought;
+   earthquake;
+   fire;
+   fire_disaster;
+   flood_disaster;
+   food;
+   generalSurvival;
+   heatwave;
+   landslide;
+   navigation;
+   pandemic;
+   shelter;
+   tsunami;
+   water;
+ };
+type SituationAnalysis = 
+ record {
+   actionSteps: vec text;
+   detectedSituations: vec record {
+                             text;
+                             nat;
+                           };
+   id: nat;
+   imageDescription: text;
+   timestamp: int;
+   topSituation: text;
+ };
+type HazardType = 
+ variant {
+   carAccident;
+   chemical;
+   chemicalSpill;
+   cyclone;
+   drought;
+   earthquake;
+   fire;
+   flood;
+   heatwave;
+   landslide;
+   pandemic;
+   tsunami;
+ };
+type HazardSeverity = 
+ variant {
+   extreme;
+   low;
+   moderate;
+   severe;
+ };
+type HazardRecord = 
+ record {
+   hazardType: HazardType;
+   location: text;
+   severity: HazardSeverity;
+   timestamp: Time;
+ };
+type FirstAidSeverity = 
+ variant {
+   critical;
+   high;
+   low;
+   moderate;
+ };
+type FirstAidCategory = 
+ variant {
+   CPR;
+   bleeding;
+   burns;
+   fractures;
+   shock;
+ };
+type FirstAidArticle = 
+ record {
+   category: FirstAidCategory;
+   content: text;
+   severity: FirstAidSeverity;
+   steps: vec text;
+   title: text;
+ };
+service : {
+  addFirstAidArticle: (article: FirstAidArticle) -> ();
+  addHazardRecord: ("record": HazardRecord) -> ();
+  addSituationAnalysis: (analysis: SituationAnalysis) -> (nat);
+  addSurvivalTopic: (topic: SurvivalTopic) -> ();
+  addTriageRecord: ("record": TriageRecord) -> ();
+  getAllFirstAidArticles: () -> (vec FirstAidArticle) query;
+  getAllHazardRecords: () -> (vec HazardRecord) query;
+  getAllSituationAnalyses: () -> (vec SituationAnalysis) query;
+  getAllSurvivalTopics: () -> (vec SurvivalTopic) query;
+  getAllTriageRecords: () -> (vec TriageRecord) query;
+  getFirstAidArticle: (title: text) -> (FirstAidArticle) query;
+  initializeData: () -> ();
+  searchArticles: (searchTerm: text) ->
+   (record {
+      firstAid: vec FirstAidArticle;
+      survival: vec SurvivalTopic;
+    }) query;
+  storeSurvivalData: () -> ();
+}

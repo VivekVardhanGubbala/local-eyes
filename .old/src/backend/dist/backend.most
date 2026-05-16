@@ -1,0 +1,125 @@
+// Version: 1.0.0
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type FirstAidArticle__1034945242 =
+  {
+    category : FirstAidCategory__854560840;
+    content : Text;
+    severity : FirstAidSeverity__573041312;
+    steps : [Text];
+    title : Text
+  };
+type FirstAidCategory__854560840 =
+  {#CPR; #bleeding; #burns; #fractures; #shock};
+type FirstAidSeverity__573041312 = {#critical; #high; #low; #moderate};
+type HazardRecord__228523599 =
+  {
+    hazardType : HazardType__28758291;
+    location : Text;
+    severity : HazardSeverity__601060661;
+    timestamp : Time__900049286
+  };
+type HazardSeverity__601060661 = {#extreme; #low; #moderate; #severe};
+type HazardType__28758291 =
+  {
+    #carAccident;
+    #chemical;
+    #chemicalSpill;
+    #cyclone;
+    #drought;
+    #earthquake;
+    #fire;
+    #flood;
+    #heatwave;
+    #landslide;
+    #pandemic;
+    #tsunami
+  };
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type SituationAnalysis__410410850 =
+  {
+    actionSteps : [Text];
+    detectedSituations : [(Text, Nat)];
+    id : Nat;
+    imageDescription : Text;
+    timestamp : Int;
+    topSituation : Text
+  };
+type SurvivalCategory__621347938 =
+  {
+    #carAccident;
+    #chemicalSpill;
+    #cyclone;
+    #drought;
+    #earthquake;
+    #fire;
+    #fire_disaster;
+    #flood_disaster;
+    #food;
+    #generalSurvival;
+    #heatwave;
+    #landslide;
+    #navigation;
+    #pandemic;
+    #shelter;
+    #tsunami;
+    #water
+  };
+type SurvivalTopic__273547599 =
+  {
+    category : SurvivalCategory__621347938;
+    content : Text;
+    tags : [Text];
+    title : Text
+  };
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+type TriageRecord__720772369 =
+  {
+    notes : Text;
+    patientId : Text;
+    status : TriageStatus__600998511;
+    symptoms : [Text];
+    timestamp : Time__900049286
+  };
+type TriageStatus__600998511 = {#deceased; #delayed; #immediate; #minor};
+actor {
+  stable firstAidMap :
+    {
+      var root : Node__46230540<Text, FirstAidArticle__1034945242>;
+      var size : Nat__490723111
+    };
+  stable hazardMap :
+    {
+      var root : Node__46230540<Text, HazardRecord__228523599>;
+      var size : Nat__490723111
+    };
+  stable var nextSituationId : Nat;
+  stable sampleFirstAid : [FirstAidArticle__1034945242];
+  stable sampleHazards : [HazardRecord__228523599];
+  stable sampleSurvival : [SurvivalTopic__273547599];
+  stable sampleTriage : [TriageRecord__720772369];
+  stable situationMap :
+    {
+      var root : Node__46230540<Nat, SituationAnalysis__410410850>;
+      var size : Nat__490723111
+    };
+  stable survivalMap :
+    {
+      var root : Node__46230540<Text, SurvivalTopic__273547599>;
+      var size : Nat__490723111
+    };
+  stable triageMap :
+    {
+      var root : Node__46230540<Text, TriageRecord__720772369>;
+      var size : Nat__490723111
+    }
+};

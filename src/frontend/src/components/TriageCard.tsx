@@ -4,8 +4,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { TriageStatus } from "../backend.d";
 import { useAddTriageRecord, useTriageRecords } from "../hooks/useQueries";
+import { TriageStatus } from "../types/localTypes";
 
 type TriageStep = {
   question: string;
@@ -60,6 +60,16 @@ const STATUS_CONFIG: Record<
     color: "oklch(0.40 0.007 95)",
     desc: "No signs of life detected.",
   },
+  [TriageStatus.minimal]: {
+    label: "MINIMAL",
+    color: "oklch(0.65 0.18 145)",
+    desc: "Minor injuries only.",
+  },
+  [TriageStatus.expectant]: {
+    label: "EXPECTANT",
+    color: "oklch(0.40 0.007 95)",
+    desc: "Unsurvivable injuries.",
+  },
 };
 
 const STATUS_COLORS: Record<TriageStatus, string> = {
@@ -67,6 +77,8 @@ const STATUS_COLORS: Record<TriageStatus, string> = {
   [TriageStatus.delayed]: "oklch(0.82 0.15 85)",
   [TriageStatus.minor]: "oklch(0.65 0.18 145)",
   [TriageStatus.deceased]: "oklch(0.40 0.007 95)",
+  [TriageStatus.minimal]: "oklch(0.65 0.18 145)",
+  [TriageStatus.expectant]: "oklch(0.40 0.007 95)",
 };
 
 export function TriageCard() {
@@ -113,6 +125,7 @@ export function TriageCard() {
       className="rounded-2xl border border-border flex flex-col overflow-hidden card-glow"
       style={{ background: "oklch(0.22 0.007 95)" }}
       id="triage"
+      aria-labelledby="triage-heading"
     >
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center gap-2">
@@ -122,17 +135,23 @@ export function TriageCard() {
               background: "oklch(0.65 0.18 145 / 0.15)",
               color: "oklch(0.65 0.18 145)",
             }}
+            aria-hidden="true"
           >
             Medical
           </span>
-          <h3 className="font-display font-bold uppercase tracking-wide text-sm text-foreground">
+          <h2
+            id="triage-heading"
+            className="font-display font-bold uppercase tracking-wide text-sm text-foreground"
+          >
             Triage
-          </h3>
+          </h2>
         </div>
         {(isLoading || isPending) && (
           <Loader2
             className="w-4 h-4 animate-spin text-muted-foreground"
             data-ocid="triage.loading_state"
+            role="status"
+            aria-label="Loading triage data..."
           />
         )}
       </div>
@@ -238,6 +257,7 @@ export function TriageCard() {
                     }}
                     onClick={() => answer("yes")}
                     data-ocid="triage.confirm_button"
+                    aria-label="Answer Yes"
                   >
                     YES
                   </Button>
@@ -246,6 +266,7 @@ export function TriageCard() {
                     className="rounded-xl font-display font-bold uppercase border-destructive text-destructive hover:bg-destructive/10"
                     onClick={() => answer("no")}
                     data-ocid="triage.cancel_button"
+                    aria-label="Answer No"
                   >
                     NO
                   </Button>
@@ -261,6 +282,8 @@ export function TriageCard() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center h-full text-center"
+              aria-live="assertive"
+              aria-label="Triage result"
             >
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center mb-4 font-display font-extrabold text-lg"

@@ -1,6 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, Package, XCircle } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type ClothingSection = {
   label: string;
@@ -92,20 +93,26 @@ const tabs: ClothingSection[] = [
 ];
 
 export function ClothingGuideCard() {
+  const { t } = useLanguage();
   return (
-    <div
+    <section
       className="rounded-xl border border-border card-glow h-full"
       style={{ background: "oklch(0.22 0.007 95)" }}
+      aria-labelledby="clothing-heading"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <Package
             className="w-4 h-4"
             style={{ color: "oklch(0.74 0.12 60)" }}
+            aria-hidden="true"
           />
-          <span className="font-display font-bold text-sm uppercase tracking-widest text-foreground">
-            Clothing Guide
-          </span>
+          <h2
+            id="clothing-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-foreground"
+          >
+            {t("clothing.title")}
+          </h2>
         </div>
         <span
           className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -115,7 +122,7 @@ export function ClothingGuideCard() {
             border: "1px solid oklch(0.74 0.12 60 / 0.3)",
           }}
         >
-          What to Wear
+          {t("clothing.badge")}
         </span>
       </div>
 
@@ -124,29 +131,29 @@ export function ClothingGuideCard() {
           className="w-full h-8 p-0.5 mb-3"
           style={{ background: "oklch(0.15 0.007 95)" }}
         >
-          {tabs.map((t) => (
+          {tabs.map((tab) => (
             <TabsTrigger
-              key={t.label}
-              value={t.label.toLowerCase()}
-              data-ocid={`clothing.${t.label.toLowerCase()}.tab`}
+              key={tab.label}
+              value={tab.label.toLowerCase()}
+              data-ocid={`clothing.${tab.label.toLowerCase()}.tab`}
               className="flex-1 text-xs h-7 data-[state=active]:text-[oklch(0.13_0.007_95)] rounded-full transition-all"
             >
-              <span>{t.emoji}</span>
+              <span>{tab.emoji}</span>
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {tabs.map((t) => (
+        {tabs.map((tab) => (
           <TabsContent
-            key={t.label}
-            value={t.label.toLowerCase()}
+            key={tab.label}
+            value={tab.label.toLowerCase()}
             className="mt-0"
           >
             <p
               className="text-sm font-bold mb-2"
               style={{ color: "oklch(0.82 0.15 85)" }}
             >
-              {t.emoji} {t.label}
+              {tab.emoji} {tab.label}
             </p>
             <ScrollArea className="h-52">
               <div className="space-y-3 pr-2">
@@ -155,14 +162,15 @@ export function ClothingGuideCard() {
                     className="text-xs font-bold uppercase tracking-wide mb-1.5"
                     style={{ color: "oklch(0.65 0.18 145)" }}
                   >
-                    ✓ Wear These
+                    {t("clothing.wear")}
                   </p>
                   <ul className="space-y-1">
-                    {t.wear.map((item) => (
+                    {tab.wear.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-xs">
                         <CheckCircle2
                           className="w-3.5 h-3.5 shrink-0 mt-0.5"
                           style={{ color: "oklch(0.65 0.18 145)" }}
+                          aria-hidden="true"
                         />
                         <span style={{ color: "oklch(0.74 0.015 80)" }}>
                           {item}
@@ -176,14 +184,15 @@ export function ClothingGuideCard() {
                     className="text-xs font-bold uppercase tracking-wide mb-1.5"
                     style={{ color: "oklch(0.65 0.2 25)" }}
                   >
-                    ✗ Do NOT Wear
+                    {t("clothing.avoid")}
                   </p>
                   <ul className="space-y-1">
-                    {t.avoid.map((item) => (
+                    {tab.avoid.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-xs">
                         <XCircle
                           className="w-3.5 h-3.5 shrink-0 mt-0.5"
                           style={{ color: "oklch(0.65 0.2 25)" }}
+                          aria-hidden="true"
                         />
                         <span style={{ color: "oklch(0.74 0.015 80)" }}>
                           {item}
@@ -197,6 +206,6 @@ export function ClothingGuideCard() {
           </TabsContent>
         ))}
       </Tabs>
-    </div>
+    </section>
   );
 }
